@@ -12,9 +12,16 @@ export default {
           '50%': { transform: 'translateY(-200px) rotate(20deg)' },
           '100%': { transform: 'translateY(0) rotate(-20deg)' },
         },
+        gradient: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
       },
+      
       animation: {
-        'lavaMotion': 'lavaMotion 20s infinite',
+        lavaMotion: 'lavaMotion 20s infinite',
+        gradient: 'gradient 10s linear infinite',
       },
     },
   },
