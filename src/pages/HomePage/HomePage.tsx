@@ -1,53 +1,51 @@
-import React, { useEffect } from 'react';
 import Gradient from './Gradient.js'; 
+import React, { useState, useEffect } from 'react';
 
-const HomePage: React.FC = () => {
+import './HomePage.css';
+
+const HomePage: React.FC  = () => {
+    const [backgroundColor, setBackgroundColor] = useState<string>('rgb(159, 231, 252)'); // Initial color #9FE7F
     useEffect(() => {
-        const gradient = new Gradient();
-        gradient.initGradient('#gradient-canvas');
+      const startColor: [number, number, number] = [159, 231, 252]; // RGB for #9FE7FC
+      const endColor: [number, number, number] = [77, 106, 240]; // RGB for #4D6AA1
+  
+      const handleScroll = (): void => {
+        const scrollPercentage: number = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+        const colorInterpolation: [number, number, number] = startColor.map((startComponent, index) => {
+          return startComponent + (endColor[index] - startComponent) * scrollPercentage;
+        }) as [number, number, number];
+  
+        setBackgroundColor(`rgb(${colorInterpolation[0]}, ${colorInterpolation[1]}, ${colorInterpolation[2]})`);
+      };
+  
+      window.addEventListener('scroll', handleScroll);
+  
+      return (): void => window.removeEventListener('scroll', handleScroll);
+    }, []);
+    // useEffect(() => {
+    //     const gradient = new Gradient();
+    //     gradient.initGradient('#gradient-canvas');
     
-        // Cleanup: remove the gradient instance when the component unmounts
-        return () => {
-        };
-      }, []);
+    //     // Cleanup: remove the gradient instance when the component unmounts
+    //     return () => {
+    //     };
+    //   }, []);
     
-      return (
-        <html>
-          <head>
-            <title>Aroop Biswal</title>
-          </head>
-          <style>
-            {`
-              body {
-                margin: 0;
-                padding: 0;
-              }
-    
-              #gradient-canvas {
-                --gradient-color-1: #6ec3f4;
-                --gradient-color-2: #3a3aff;
-                --gradient-color-3: #ff61ab;
-                --gradient-color-4: #E63946;
-              }
-
-              .rotate-div {
-                transform: rotate(-15deg); /* Rotate the div by -30 degrees */
-                display: inline-block; /* Ensures the div takes only the necessary width */
-                transform-origin: bottom left; /* Rotate around the top-left corner */
-                width: 125vw;
-            }
-            `}
-          </style>
-          <body>
-            <div className="relative">
-
-            <canvas className="absolute inset-0 transform rounded-bl-3xl rounded-br-3xl rotate-{30} transform-gpu" id="gradient-canvas"></canvas>
-            <div className="absolute .rotate-div inset-0 bg-white "></div>
-              hi
-            </div>
-          </body>
-        </html>
-      );
+    return (
+      <div style={{ backgroundColor: backgroundColor }} className="w-full min-h-screen flex flex-col justify-center">
+        <div className="rainbow-text p-4 text-center">
+          Hi! I'm Aroop Biswal
+        </div>
+        {/* Additional content to make the page scrollable */}
+        <div className="h-screen"></div>
+      </div>
+    );
     };
 
 export default HomePage;
+
+
+// IDEA: Have the top of the page be like the morning, with a light blue sky
+// and as you scroll down, the sky gets darker and darker until it's night time
+// with a dark blue sky. The text should be white and the background should have
+// stars.

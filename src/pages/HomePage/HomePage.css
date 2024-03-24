@@ -1,0 +1,22 @@
+@keyframes rainbowAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+.rainbow-text {
+  /* Applying the animated gradient to the text */
+  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+  background-size: 200% 200%;
+  animation: rainbowAnimation 10s ease infinite;
+  
+  /* Clipping the background to the text */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Making the text color transparent */
+  
+  font-size: 2rem; /* Adjust as needed */
+  font-weight: bold;
+
+}
