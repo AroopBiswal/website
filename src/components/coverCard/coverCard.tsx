@@ -75,10 +75,7 @@ const CoverCard = ({
         </div>
       </div>
     </div>
-    <canvas 
-      className="z-0 transform rounded-bl-3xl rounded-br-3xl rotate-{30} transform-gpu" 
-      id="gradient-canvas">
-    </canvas>
+
     
     </html>
   )
