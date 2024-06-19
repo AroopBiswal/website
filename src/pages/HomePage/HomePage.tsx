@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import CoverCard from '../../components/coverCard/coverCard';   
 
 export const HomePage: React.FC = () => {
