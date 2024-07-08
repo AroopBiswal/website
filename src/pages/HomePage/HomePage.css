@@ -7,7 +7,7 @@
 
 .rainbow-text {
   /* Applying the animated gradient to the text */
-  background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+  background: linear-gradient(45deg, #003366, #004080, #00509e, #005bc5, #0072e5, #0086ff, #0099ff);
   background-size: 200% 200%;
   animation: rainbowAnimation 10s ease infinite;
   
@@ -20,3 +20,8 @@
   font-weight: bold;
 
 }
+
+.top-image {
+  background-image: url('../../assets/seascape.jpg');
+}
+

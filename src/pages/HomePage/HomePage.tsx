@@ -33,10 +33,17 @@ const HomePage: React.FC  = () => {
     
     return (
       <div style={{ backgroundColor: backgroundColor }} className="w-full min-h-screen flex flex-col justify-center">
+        <div className="top-image h-screen">
         <div className="rainbow-text p-4 text-center">
-          Hi! I'm Aroop Biswal
+          Hi! I'm Aroop Biswal 
         </div>
-        {/* Additional content to make the page scrollable */}
+        </div>
+
+        
+        <div className="h-screen"></div>
+        <div className="h-screen"></div>
+        <div className="h-screen"></div>
+        <div className="h-screen"></div>
         <div className="h-screen"></div>
       </div>
     );
