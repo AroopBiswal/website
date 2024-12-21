@@ -1,19 +1,28 @@
-import React from 'react';
-import CoverCard from '../../components/coverCard/coverCard';   
+import React, { useState } from 'react';
+import Sidebar from '../../components/sidebar/Sidebar';
+import Navbar from '../../components/navbar/Navbar';
+import CoverPage from '../../components/covertile/CoverTile';
 
-export const HomePage: React.FC = () => {
+const HomePage: React.FC = () => {
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prevMode) => !prevMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
   return (
-    <CoverCard
-    title="African<br />forest"
-    image="/background.jpg"
-    subTitle="African forest tour"
-    text={`An amazing history, stunning nature, and a high level of
-    development make the country unique on the African continent.
-    Two oceans, savannah, mountains, desert, rainforest and the
-    rythms of African drums.`}
-    link="#"
-  />
+    <div className={`flex ${darkMode ? 'dark' : ''} bg-lightBg dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300`}>
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div className="ml-20 flex-1">
+        <Navbar toggleDarkMode={toggleDarkMode} />
+        <CoverPage />
+      </div>
+    </div>
   );
-}
+};
 
 export default HomePage;

@@ -1,21 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-// components
-import Navbar from './components/navbar/Navbar'
-import Intro from './components/intro/Intro'
+import React, { useState } from 'react';
+import Sidebar from './components/sidebar/Sidebar';
+import Navbar from './components/navbar/Navbar';
+import CoverPage from './components/covertile/CoverTile';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prevMode) => !prevMode);
+    document.documentElement.classList.toggle('dark');
+  };
 
   return (
-    <>
-      <Navbar />
-      <Intro />
-    </>
-  )
+    <div className={`flex ${darkMode ? 'dark' : ''}`}>
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div className="flex-1 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <Navbar toggleDarkMode={toggleDarkMode} />
+        <CoverPage />
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;

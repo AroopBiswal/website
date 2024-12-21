@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       keyframes: {
@@ -22,6 +23,11 @@ export default {
       animation: {
         lavaMotion: 'lavaMotion 20s infinite',
         gradient: 'gradient 10s linear infinite',
+      },
+
+      colors: {
+        lightBg: '#FFDDC7',
+        darkBg: '#111827',
       },
     },
   },
