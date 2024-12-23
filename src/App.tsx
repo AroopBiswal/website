@@ -17,7 +17,7 @@ function App() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <div className="flex-1 bg-lightBg dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300">
         <Navbar toggleDarkMode={toggleDarkMode} />
         <CoverPage />
       </div>
