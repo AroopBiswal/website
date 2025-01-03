@@ -2,3 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    body {
+      @apply font-sans;
+      letter-spacing: -0.05em;
+    }
+  }

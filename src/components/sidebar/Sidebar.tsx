@@ -6,12 +6,12 @@ const Sidebar: React.FC = () => {
       <div className="text-lg font-bold mb-4">Aroop</div>
       <ul className="space-y-4 text-sm">
         <li>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/AroopBiswal" target="_blank" rel="noopener noreferrer">
             GitHub
           </a>
         </li>
         <li>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.linkedin.com/in/aroopbiswal/" target="_blank" rel="noopener noreferrer">
             LinkedIn
           </a>
         </li>

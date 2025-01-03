@@ -7,26 +7,11 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      keyframes: {
-        lavaMotion: {
-          '0%': { transform: 'translateY(0) rotate(-20deg)' },
-          '50%': { transform: 'translateY(-200px) rotate(20deg)' },
-          '100%': { transform: 'translateY(0) rotate(-20deg)' },
-        },
-        gradient: {
-          '0%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
-          '100%': { backgroundPosition: '0% 50%' },
-        },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'],
       },
-      
-      animation: {
-        lavaMotion: 'lavaMotion 20s infinite',
-        gradient: 'gradient 10s linear infinite',
-      },
-
       colors: {
-        lightBg: '#FFDDC7',
+        lightBg: '#e6c1a1',
         darkBg: '#111827',
       },
     },
