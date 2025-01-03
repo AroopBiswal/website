@@ -38,14 +38,14 @@ const CoverTile: React.FC = () => {
         {/* Main Text */}
         <h1 className="text-5xl font-bold">
           {mainText}
-          {!hideMainCursor && <Cursor cursorColor="black" />}
+          {!hideMainCursor && <Cursor cursorColor="white" />}
         </h1>
 
         {/* Subtext */}
         {showSubText && (
           <p className="mt-4 text-lg">
             {subText}
-            {!hideSubCursor && <Cursor cursorColor="black" />}
+            {!hideSubCursor && <Cursor cursorColor="white" />}
           </p>
         )}
       </div>
