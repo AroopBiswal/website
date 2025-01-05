@@ -14,7 +14,16 @@ export default {
         lightBg: '#e6c1a1',
         darkBg: '#111827',
       },
+      animation: {
+        fadeIn: 'fadeIn 1s ease-in-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate')],
 }

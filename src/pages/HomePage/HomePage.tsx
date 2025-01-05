@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/sidebar/Sidebar';
 import Navbar from '../../components/navbar/Navbar';
 import CoverTile from '../../components/covertile/CoverTile';
+import About from '../../components/about/About';
 
 const HomePage: React.FC = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -32,6 +32,7 @@ const HomePage: React.FC = () => {
       <div className="flex-1">
         <Navbar toggleDarkMode={toggleDarkMode} />
         <CoverTile />
+        <About />
       </div>
     </div>
   );
