@@ -39,83 +39,86 @@ const CoverTile: React.FC = () => {
   );
 
   return (
-    <div className="relative h-screen flex flex-col justify-start bg-lightBg dark:bg-darkBg overflow-hidden">
-      <svg
-        className="absolute inset-0 w-full h-full"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1000 1000"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <defs>
-          <filter id="blur" x="0" y="0">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
-          </filter>
-        </defs>
-        <g filter="url(#blur)">
-          <circle cx="200" cy="300" r="250" fill="rgba(236, 72, 153, 0.5)">
-            <animate
-              attributeName="cx"
-              values="200; 250; 200"
-              dur="10s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="300; 350; 300"
-              dur="8s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle cx="500" cy="500" r="300" fill="rgba(139, 92, 246, 0.5)">
-            <animate
-              attributeName="cx"
-              values="500; 550; 500"
-              dur="12s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="500; 450; 500"
-              dur="9s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle cx="800" cy="700" r="220" fill="rgba(59, 130, 246, 0.5)">
-            <animate
-              attributeName="cx"
-              values="800; 750; 800"
-              dur="14s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="700; 800; 600"
-              dur="11s"
-              repeatCount="indefinite"
-            />
-          </circle>
-        </g>
-      </svg>
+      <div className="relative h-screen flex flex-col justify-start bg-lightBg dark:bg-darkBg overflow-hidden">
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-transparent to-lightBg dark:to-darkBg"
+          style={{ zIndex: 5 }}
+        ></div>
 
-      {/* Content */}
-      <div className="relative z-10 h-1/6"></div>
-      <div className="relative z-10 text-center">
-        {/* Main Text */}
-        <h1 className="text-5xl font-bold text-dark dark:text-white">
-          {mainText}
-          {!hideMainCursor && <Cursor cursorColor="white" />}
-        </h1>
+        <svg
+          className="absolute inset-0 w-full h-full"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1000 1000"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <defs>
+            <filter id="blur" x="0" y="0">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
+            </filter>
+          </defs>
+          <g filter="url(#blur)">
+            <circle cx="200" cy="300" r="250" fill="rgba(236, 72, 153, 0.5)">
+              <animate
+                attributeName="cx"
+                values="200; 250; 200"
+                dur="10s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="cy"
+                values="300; 350; 300"
+                dur="8s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle cx="500" cy="500" r="300" fill="rgba(139, 92, 246, 0.5)">
+              <animate
+                attributeName="cx"
+                values="500; 550; 500"
+                dur="12s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="cy"
+                values="500; 450; 500"
+                dur="9s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle cx="800" cy="700" r="220" fill="rgba(59, 130, 246, 0.5)">
+              <animate
+                attributeName="cx"
+                values="800; 750; 800"
+                dur="14s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="cy"
+                values="700; 800; 600; 700"
+                dur="11s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </g>
+        </svg>
 
-        {/* Subtext */}
-        {showSubText && (
-          <p className="mt-4 text-lg text-dark dark:text-white">
-            {subText}
-            {!hideSubCursor && <Cursor cursorColor="white" />}
-            {hideSubCursor && metaLink}
-          </p>
-        )}
+        <div className="relative z-10 h-1/6"></div>
+        <div className="relative w-full z-10 text-center">
+          <h1 className="text-5xl font-bold text-dark dark:text-white">
+            {mainText}
+            {!hideMainCursor && <Cursor cursorColor="white" />}
+          </h1>
+
+          {showSubText && (
+            <p className="mt-4 text-2xl text-dark dark:text-gray-300">
+              {subText}
+              {!hideSubCursor && <Cursor cursorColor="white" />}
+              {hideSubCursor && metaLink}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+
   );
 };
 

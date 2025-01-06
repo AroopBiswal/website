@@ -1,3 +1,5 @@
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -11,11 +13,11 @@ export default {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'],
       },
       colors: {
-        lightBg: '#e6c1a1',
+        lightBg: '#F3F4F6',
         darkBg: '#111827',
       },
       animation: {
-        fadeIn: 'fadeIn 1s ease-in-out',
+        fadeIn: 'fadeIn 2s ease-in-out',
       },
       keyframes: {
         fadeIn: {
@@ -25,5 +27,5 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
-}
+  plugins: [tailwindcssAnimate],
+};
