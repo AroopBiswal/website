@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/sidebar/Sidebar';
 import Navbar from '../../components/navbar/Navbar';
-import CoverPage from '../../components/covertile/CoverTile';
+import CoverTile from '../../components/covertile/CoverTile';
+import About from '../../components/about/About';
 
 const HomePage: React.FC = () => {
   const [darkMode, setDarkMode] = useState(true);
-
   const toggleDarkMode = () => {
     setDarkMode((prevMode) => !prevMode);
     document.documentElement.classList.toggle('dark');
@@ -26,12 +25,16 @@ const HomePage: React.FC = () => {
       } bg-lightBg dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300`}
     >
 
-      <Sidebar />
 
 
-      <div className="ml-20 flex-1">
+      <div className="flex-1">
         <Navbar toggleDarkMode={toggleDarkMode} />
-        <CoverPage />
+        <div id="cover-tile">
+          <CoverTile />
+        </div>
+        <div id="about">
+          <About />
+        </div>
       </div>
     </div>
   );
