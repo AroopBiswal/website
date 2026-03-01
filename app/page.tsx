@@ -1,16 +1,8 @@
-"use client";
+import Link from "next/link";
 
-import { useEffect, useState } from "react";
-
-const ACCENT_COLORS = ["#f5b163", "#7bdff2", "#ff7ab2", "#9adf7d", "#f4e77d", "#c4a1ff"];
+import AccentWheel from "./components/accent-wheel";
 
 export default function Home() {
-  const [accentIndex, setAccentIndex] = useState(0);
-
-  useEffect(() => {
-    document.documentElement.style.setProperty("--accent", ACCENT_COLORS[accentIndex]);
-  }, [accentIndex]);
-
   return (
     <div className="min-h-screen bg-charcoal text-stone-100">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -23,18 +15,13 @@ export default function Home() {
 
       <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-10">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setAccentIndex((prev) => (prev + 1) % ACCENT_COLORS.length)}
-            className="color-wheel color-wheel-orbit rounded-full"
-            aria-label="Change accent color"
-            title="Change accent color"
-          >
-            <span className="sr-only">Change accent color</span>
-          </button>
+          <AccentWheel />
         </div>
         <nav className="hidden items-center gap-8 text-sm text-stone-300 md:flex">
-          <a className="hover:text-stone-100" href="#experience">
+          <Link className="hover:text-stone-100" href="/about">
+            About
+          </Link>
+          <a className="text-stone-100" href="#experience">
             Experience
           </a>
           <a className="hover:text-stone-100" href="#projects">
@@ -55,31 +42,22 @@ export default function Home() {
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-24">
         <section className="grid gap-10 pt-6 md:grid-cols-[1.2fr_0.8fr] md:items-center">
           <div className="space-y-6">
-            <h1 className="text-4xl font-semibold leading-tight text-stone-50 md:text-5xl">
-              Hi I&apos;m Aroop
-            </h1>
+            <p className="text-lg font-semibold text-stone-100">SWE @ Meta</p>
+            <h1 className="text-4xl font-semibold leading-tight text-stone-50 md:text-5xl">Hi I&apos;m Aroop</h1>
             <p className="text-base leading-7 text-stone-300">
-              I&apos;m Aroop, a software engineer with a strong interest in Agentic AI. In my free time I love heading down to Tahoe to snowboard, watching/playing basketball with friends, or just exploring SF.
+              I&apos;m Aroop, a software engineer focused on thoughtful product
+              experiences, data-informed decisions, and infrastructure that keeps
+              teams moving fast.
             </p>
             <div className="flex flex-wrap gap-3">
-              <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">
-                Systems Design
-              </span>
-              <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">
-                Product Engineering
-              </span>
-              <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">
-                Data Platforms
-              </span>
+              <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">Systems Design</span>
+              <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">Product Engineering</span>
+              <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">Data Platforms</span>
             </div>
           </div>
           <div className="rounded-3xl border border-stone-700/60 bg-stone-900/60 p-6 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
-            <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
-              Jan 2025 - Now
-            </p>
-            <h3 className="mt-4 text-lg font-semibold text-stone-100">
-              Meta · Software Engineer
-            </h3>
+            <p className="text-xs uppercase tracking-[0.3em] text-stone-400">Jan 2025 - Now</p>
+            <h3 className="mt-4 text-lg font-semibold text-stone-100">Meta · Software Engineer</h3>
             <p className="mt-4 text-lg text-stone-100">
               Driving performance improvements across backend services for Facebook and Instagram Ads
             </p>
@@ -94,23 +72,15 @@ export default function Home() {
         <section id="experience" className="space-y-8">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-stone-400">
-                Past Experience
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-stone-50">
-                What I used to do
-              </h2>
+              <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Past Experience</p>
+              <h2 className="mt-3 text-2xl font-semibold text-stone-50">What I used to do</h2>
             </div>
-            <p className="hidden text-sm text-stone-400 md:block">
-              2018 - Present
-            </p>
+            <p className="hidden text-sm text-stone-400 md:block">2018 - 2024</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">
-                  Meaku AI · AI Engineer
-                </h3>
+                <h3 className="text-lg font-semibold text-stone-100">Meaku AI · AI Engineer</h3>
                 <span className="text-xs text-stone-400">Aug 2024 - Oct 2024</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
@@ -121,9 +91,7 @@ export default function Home() {
             </article>
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">
-                  Valley Tech Systems · ML Software Intern
-                </h3>
+                <h3 className="text-lg font-semibold text-stone-100">Valley Tech Systems · ML Software Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2023 - Sep 2023</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
@@ -134,9 +102,7 @@ export default function Home() {
             </article>
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">
-                  Intel Corporation · Software Engineer Intern
-                </h3>
+                <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Software Engineer Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2022 - Sep 2022</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
@@ -147,9 +113,7 @@ export default function Home() {
             </article>
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">
-                  Intel Corporation · Software Engineering Intern
-                </h3>
+                <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Software Engineering Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2019 - Aug 2019</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
@@ -160,9 +124,7 @@ export default function Home() {
             </article>
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 md:col-span-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">
-                  Intel Corporation · Technical Support Intern
-                </h3>
+                <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Technical Support Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2018 - Aug 2018</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
@@ -176,12 +138,8 @@ export default function Home() {
 
         <section id="projects" className="space-y-8">
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-stone-400">
-              Projects
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold text-stone-50">
-              Some of the things I&apos;ve made
-            </h2>
+            <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Projects</p>
+            <h2 className="mt-3 text-2xl font-semibold text-stone-50">Some of the things I&apos;ve made</h2>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {[
@@ -206,19 +164,12 @@ export default function Home() {
                 className="flex h-full flex-col justify-between rounded-2xl border border-stone-800 bg-stone-900/70 p-6"
               >
                 <div>
-                  <h3 className="text-lg font-semibold text-stone-100">
-                    {project.title}
-                  </h3>
-                  <p className="mt-4 text-sm leading-6 text-stone-300">
-                    {project.desc}
-                  </p>
+                  <h3 className="text-lg font-semibold text-stone-100">{project.title}</h3>
+                  <p className="mt-4 text-sm leading-6 text-stone-300">{project.desc}</p>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2 text-xs text-stone-400">
                   {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-stone-700 px-3 py-1"
-                    >
+                    <span key={tag} className="rounded-full border border-stone-700 px-3 py-1">
                       {tag}
                     </span>
                   ))}
@@ -228,18 +179,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section
-          id="contact"
-          className="rounded-3xl border border-stone-800 bg-stone-900/80 p-8"
-        >
+        <section id="contact" className="rounded-3xl border border-stone-800 bg-stone-900/80 p-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-stone-400">
-                Contact
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-stone-50">
-                Let&apos;s build something thoughtful
-              </h2>
+              <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Contact</p>
+              <h2 className="mt-3 text-2xl font-semibold text-stone-50">Let&apos;s build something thoughtful</h2>
               <p className="mt-2 text-sm text-stone-300">
                 Email, calendar, or a quick DM works. I respond within 48 hours.
               </p>
