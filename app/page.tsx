@@ -1,6 +1,4 @@
-import Link from "next/link";
-
-import AccentWheel from "./components/accent-wheel";
+import Navbar from "./components/navbar";
 
 export default function Home() {
   return (
@@ -13,34 +11,10 @@ export default function Home() {
         <div className="absolute bottom-0 right-[-10%] h-[420px] w-[420px] rounded-full bg-azure/15 blur-[140px]" />
       </div>
 
-      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-10">
-        <div className="flex items-center gap-3">
-          <AccentWheel />
-        </div>
-        <nav className="hidden items-center gap-8 text-sm text-stone-300 md:flex">
-          <a className="text-stone-100" href="#experience">
-            Experience
-          </a>
-          <a className="hover:text-stone-100" href="#projects">
-            Projects
-          </a>
-          <Link className="hover:text-stone-100" href="/about">
-            About Me
-          </Link>
-          <a className="hover:text-stone-100" href="#contact">
-            Contact
-          </a>
-        </nav>
-        <a
-          className="rounded-full border border-stone-600/60 px-4 py-2 text-sm text-stone-200 transition hover:border-stone-300 hover:text-stone-50"
-          href="#contact"
-        >
-          Let&apos;s talk
-        </a>
-      </header>
+      <Navbar />
 
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-24">
-        <section className="grid gap-10 pt-6 md:grid-cols-[1.2fr_0.8fr] md:items-center">
+        <section id="about" className="grid gap-10 pt-6 md:grid-cols-[1.2fr_0.8fr] md:items-center">
           <div className="space-y-6">
             <p className="text-lg font-semibold text-stone-100">SWE @ Meta</p>
             <h1 className="text-4xl font-semibold leading-tight text-stone-50 md:text-5xl">Hi I&apos;m Aroop</h1>
