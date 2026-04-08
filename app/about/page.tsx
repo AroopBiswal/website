@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import AccentWheel from "../components/accent-wheel";
+import PhotoCarousel from "../components/photo-carousel";
 
 export default function AboutPage() {
   return (
@@ -18,14 +19,14 @@ export default function AboutPage() {
           <AccentWheel />
         </div>
         <nav className="hidden items-center gap-8 text-sm text-stone-300 md:flex">
-          <Link className="text-stone-100" href="/about">
-            About
-          </Link>
           <Link className="hover:text-stone-100" href="/">
             Experience
           </Link>
           <Link className="hover:text-stone-100" href="/#projects">
             Projects
+          </Link>
+          <Link className="text-stone-100" href="/about">
+            About Me
           </Link>
           <Link className="hover:text-stone-100" href="/#contact">
             Contact
@@ -71,6 +72,14 @@ export default function AboutPage() {
               <li>Based in San Francisco, CA.</li>
             </ul>
           </div>
+        </section>
+
+        <section className="space-y-6">
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Photos</p>
+            <h2 className="mt-3 text-2xl font-semibold text-stone-50">A few moments</h2>
+          </div>
+          <PhotoCarousel />
         </section>
       </main>
     </div>

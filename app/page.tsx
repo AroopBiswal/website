@@ -18,15 +18,15 @@ export default function Home() {
           <AccentWheel />
         </div>
         <nav className="hidden items-center gap-8 text-sm text-stone-300 md:flex">
-          <Link className="hover:text-stone-100" href="/about">
-            About
-          </Link>
           <a className="text-stone-100" href="#experience">
             Experience
           </a>
           <a className="hover:text-stone-100" href="#projects">
             Projects
           </a>
+          <Link className="hover:text-stone-100" href="/about">
+            About Me
+          </Link>
           <a className="hover:text-stone-100" href="#contact">
             Contact
           </a>
