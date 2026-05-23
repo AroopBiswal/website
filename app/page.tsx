@@ -19,9 +19,7 @@ export default function Home() {
             <p className="text-lg font-semibold text-stone-100">SWE @ Meta</p>
             <h1 className="text-4xl font-semibold leading-tight text-stone-50 md:text-5xl">Hi I&apos;m Aroop</h1>
             <p className="text-base leading-7 text-stone-300">
-              I&apos;m Aroop, a software engineer focused on thoughtful product
-              experiences, data-informed decisions, and infrastructure that keeps
-              teams moving fast.
+              Software engineer at Meta, based in San Francisco.
             </p>
             <div className="flex flex-wrap gap-3">
               <span className="rounded-full bg-stone-800/80 px-4 py-2 text-xs text-stone-200">Systems Design</span>
@@ -31,14 +29,15 @@ export default function Home() {
           </div>
           <div className="rounded-3xl border border-stone-700/60 bg-stone-900/60 p-6 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
             <p className="text-xs uppercase tracking-[0.3em] text-stone-400">Jan 2025 - Now</p>
-            <h3 className="mt-4 text-lg font-semibold text-stone-100">Meta · Software Engineer</h3>
+            <h3 className="mt-4 text-lg font-semibold text-stone-100">Meta · Software Engineer, Monetization</h3>
             <p className="mt-4 text-lg text-stone-100">
-              Driving performance improvements across backend services for Facebook and Instagram Ads
+              Shipping ad delivery optimizations and internal AI tooling for a 100+ engineer Ads org
             </p>
             <ul className="mt-6 space-y-2 text-sm text-stone-300">
-              <li>Improving backend performance for Facebook and Instagram Ads.</li>
-              <li>Building AI-enabled internal tooling for faster engineering workflows.</li>
-              <li>Strengthening reliability and observability across core services.</li>
+              <li>Shipped ad delivery optimizations driving $59M in annual revenue.</li>
+              <li>Built the org-wide AI agent (54+ users), saving 4,500+ hours/year on experiment analysis.</li>
+              <li>Extended code maintenance tooling, achieving 39x more stale code removal.</li>
+              <li>Built a latency dashboard that cut time-to-insight by 80%.</li>
             </ul>
           </div>
         </section>
@@ -49,29 +48,40 @@ export default function Home() {
               <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Past Experience</p>
               <h2 className="mt-3 text-2xl font-semibold text-stone-50">What I used to do</h2>
             </div>
-            <p className="hidden text-sm text-stone-400 md:block">2018 - 2024</p>
+            <p className="hidden text-sm text-stone-400 md:block">2022 - 2024</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">Meaku AI · AI Engineer</h3>
-                <span className="text-xs text-stone-400">Aug 2024 - Oct 2024</span>
+                <h3 className="text-lg font-semibold text-stone-100">Meaku AI · ML Engineer Intern</h3>
+                <span className="text-xs text-stone-400">Aug 2024 - Sep 2024</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
-                <li>Led development of a RAG agent with dynamic LLM controls (top-k, temperature, response length).</li>
-                <li>Implemented context-aware prompt generation and fine-tuned OpenAI and Anthropic models on 150 curated conversations.</li>
-                <li>Oversaw integration and public launch on a client website serving 20k+ monthly visitors.</li>
+                <li>Launched a RAG agent on a client site with 20k+ monthly visitors.</li>
+                <li>Dynamic prompt generation cut response latency by 15%.</li>
+                <li>Fine-tuned OpenAI and Anthropic LLMs on 150 curated conversations.</li>
+                <li>Built an automated knowledge base pipeline with Firecrawl.</li>
               </ul>
             </article>
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">Valley Tech Systems · ML Software Intern</h3>
+                <h3 className="text-lg font-semibold text-stone-100">Aggieworks · Full Stack Engineer</h3>
+                <span className="text-xs text-stone-400">Mar 2023 - Jun 2024</span>
+              </div>
+              <ul className="mt-4 space-y-2 text-sm text-stone-300">
+                <li>Grew Clubly from 0 to 2,000+ student users.</li>
+                <li>Built semantic search using pgvector and Go.</li>
+                <li>Led Svelte frontend and added Amplitude Analytics.</li>
+              </ul>
+            </article>
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-stone-100">Valley Tech Systems · Software Engineer Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2023 - Sep 2023</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
-                <li>Served as primary ML software developer and led a team of three interns.</li>
-                <li>Built a Python data pipeline to collect and prepare 10,000+ images for training.</li>
-                <li>Trained and integrated a TensorFlow CNN for object classification into the existing product.</li>
+                <li>Led 3 interns building a pipeline to collect and label 4,000+ training images.</li>
+                <li>Trained a TensorFlow model to 0.86 accuracy and shipped it to the commercial product.</li>
               </ul>
             </article>
             <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
@@ -80,31 +90,9 @@ export default function Home() {
                 <span className="text-xs text-stone-400">Jun 2022 - Sep 2022</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
-                <li>Built a video-processing ML pipeline using Intel DLStreamer and OpenVINO models in the Client Computing Group.</li>
-                <li>Independently delivered the pipeline and supporting workflows for end-user platforms.</li>
-                <li>Authored porting docs for Windows, helping enable future development and official platform support.</li>
-              </ul>
-            </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Software Engineering Intern</h3>
-                <span className="text-xs text-stone-400">Jun 2019 - Aug 2019</span>
-              </div>
-              <ul className="mt-4 space-y-2 text-sm text-stone-300">
-                <li>Retrained an image classification model on target objects and evaluated performance on Intel silicon with OpenVINO.</li>
-                <li>Provided software support for the Intel Aero drone across 30+ client support tickets.</li>
-                <li>Built hands-on experience in ML, computer vision, and customer-facing software support.</li>
-              </ul>
-            </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 md:col-span-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Technical Support Intern</h3>
-                <span className="text-xs text-stone-400">Jun 2018 - Aug 2018</span>
-              </div>
-              <ul className="mt-4 space-y-2 text-sm text-stone-300">
-                <li>Managed daily technical escalations for Intel&apos;s development boards, drones, and camera products.</li>
-                <li>Automated large-scale customer data transfer into a new database to streamline migration.</li>
-                <li>Delivered Linux-based software fixes for external support tickets with timely resolution.</li>
+                <li>Built a GStreamer video-processing pipeline for video chat.</li>
+                <li>Wrote a Python extension for AI inferencing and real-time video effects.</li>
+                <li>Containerized and ported the pipeline from Linux to WSL 2.0 with Docker.</li>
               </ul>
             </article>
           </div>
@@ -118,19 +106,25 @@ export default function Home() {
           <div className="grid gap-6 md:grid-cols-3">
             {[
               {
-                title: "Atlas",
-                desc: "A platform for curated analytics narratives with fast, reliable data refreshes.",
-                tags: ["Next.js", "Data", "Product"],
+                title: "Notion Budget Sync",
+                desc: "Import bank transactions (CSV, XLSX, any format) into a Notion budget database. An LLM detects the file format on first run and caches the mapping — every subsequent sync is free and deterministic. Ships as a web UI and CLI.",
+                tags: ["Python", "Flask", "LangChain", "Notion API"],
+                href: "https://github.com/AroopBiswal/notion-budget-sync",
+                linkLabel: "GitHub ↗",
               },
               {
-                title: "Signal Room",
-                desc: "Internal tool that aggregates operational signals and surfaces anomalies.",
-                tags: ["TypeScript", "Infra", "UX"],
+                title: "Clubly",
+                desc: "Student club discovery platform built with Aggieworks. Grew from 0 to 2,000+ UC Davis students. Features semantic search powered by pgvector and Amplitude Analytics for usage insights.",
+                tags: ["Go", "Svelte", "pgvector", "Postgres"],
+                href: "https://clubly.org/",
+                linkLabel: "Website ↗",
               },
               {
-                title: "Pulse",
-                desc: "A lightweight experimentation dashboard for fast iteration cycles.",
-                tags: ["React", "Observability", "Systems"],
+                title: "Expense Splitter",
+                desc: "A utility for splitting shared expenses across groups, tracking balances, and settling up — built for clarity when money gets complicated.",
+                tags: ["TypeScript", "React", "Finance"],
+                href: null,
+                linkLabel: null,
               },
             ].map((project) => (
               <article
@@ -138,7 +132,19 @@ export default function Home() {
                 className="flex h-full flex-col justify-between rounded-2xl border border-stone-800 bg-stone-900/70 p-6"
               >
                 <div>
-                  <h3 className="text-lg font-semibold text-stone-100">{project.title}</h3>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-lg font-semibold text-stone-100">{project.title}</h3>
+                    {project.href && project.linkLabel && (
+                      <a
+                        href={project.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-0.5 shrink-0 text-xs text-stone-400 underline underline-offset-2 hover:text-stone-200"
+                      >
+                        {project.linkLabel}
+                      </a>
+                    )}
+                  </div>
                   <p className="mt-4 text-sm leading-6 text-stone-300">{project.desc}</p>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2 text-xs text-stone-400">
@@ -163,12 +169,12 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <a className="accent-bg rounded-full px-5 py-2 text-sm font-medium transition" href="mailto:hello@aroop.dev">
+              <a className="accent-bg rounded-full px-5 py-2 text-sm font-medium transition" href="mailto:aroopbiswal@gmail.com">
                 Email me
               </a>
               <a
                 className="rounded-full border border-stone-600 px-5 py-2 text-sm text-stone-200 transition hover:border-stone-300"
-                href="https://www.linkedin.com"
+                href="https://linkedin.com/in/AroopBiswal/"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -176,11 +182,19 @@ export default function Home() {
               </a>
               <a
                 className="rounded-full border border-stone-600 px-5 py-2 text-sm text-stone-200 transition hover:border-stone-300"
-                href="https://github.com"
+                href="https://github.com/AroopBiswal"
                 target="_blank"
                 rel="noreferrer"
               >
                 GitHub
+              </a>
+              <a
+                className="rounded-full border border-stone-600 px-5 py-2 text-sm text-stone-200 transition hover:border-stone-300"
+                href="/resume.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Resume
               </a>
             </div>
           </div>

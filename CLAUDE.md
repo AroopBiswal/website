@@ -124,3 +124,4 @@ Active state logic (in `navbar.tsx`): "Me" tab is active when `pathname === "/ab
 | +Navbar component | Extracted shared `Navbar` component; nav is now single source of truth |
 | +About Me tab | Added "About Me" as first tab → `/#about`; hero section given `id="about"` |
 | Rename tab | `/about` page tab renamed from "About Me" to "Me" |
+| Resume sync | Updated all content from resume: real Meta metrics ($59.1M revenue, AI agent 54+ users), corrected experience entries (removed Intel 2018/2019, added Aggieworks/Clubly), replaced placeholder projects with real ones (Notion Budget Sync, Clubly, Expense Splitter), fixed contact links (email, LinkedIn, GitHub) |
