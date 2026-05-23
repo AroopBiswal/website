@@ -4,9 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 
 const SLIDES = [
-  { src: "/photos/photo1.jpg", alt: "Photo 1" },
-  { src: "/photos/photo2.jpg", alt: "Photo 2" },
-  { src: "/photos/photo3.jpg", alt: "Photo 3" },
+  { src: "/photos/photo2.jpg", alt: "Photo 1" },
+  { src: "/photos/photo3.jpg", alt: "Photo 2" },
+  { src: "/photos/photo1.jpg", alt: "Photo 3" },
 ];
 
 export default function PhotoCarousel() {
