@@ -13,7 +13,7 @@ export default function Home() {
 
       <Navbar />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-24">
+      <main className="page-enter relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-24">
         <section id="about" className="grid gap-10 pt-6 md:grid-cols-[1.2fr_0.8fr] md:items-center">
           <div className="space-y-6">
             <p className="text-lg font-semibold text-stone-100">SWE @ Meta</p>
@@ -52,7 +52,7 @@ export default function Home() {
             <p className="hidden text-sm text-stone-400 md:block">2018 - 2024</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Meaku AI · AI Engineer</h3>
                 <span className="text-xs text-stone-400">Aug 2024 - Oct 2024</span>
@@ -63,7 +63,7 @@ export default function Home() {
                 <li>Oversaw integration and public launch on a client website serving 20k+ monthly visitors.</li>
               </ul>
             </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Valley Tech Systems · ML Software Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2023 - Sep 2023</span>
@@ -74,7 +74,7 @@ export default function Home() {
                 <li>Trained and integrated a TensorFlow CNN for object classification into the existing product.</li>
               </ul>
             </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Software Engineer Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2022 - Sep 2022</span>
@@ -85,7 +85,7 @@ export default function Home() {
                 <li>Authored porting docs for Windows, helping enable future development and official platform support.</li>
               </ul>
             </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Software Engineering Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2019 - Aug 2019</span>
@@ -135,7 +135,7 @@ export default function Home() {
             ].map((project) => (
               <article
                 key={project.title}
-                className="flex h-full flex-col justify-between rounded-2xl border border-stone-800 bg-stone-900/70 p-6"
+                className="flex h-full flex-col justify-between rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20"
               >
                 <div>
                   <h3 className="text-lg font-semibold text-stone-100">{project.title}</h3>

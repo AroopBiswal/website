@@ -40,9 +40,17 @@ export default function Navbar() {
                 <Link
                   key={label}
                   href={href}
-                  className={isActive ? "text-stone-100" : "hover:text-stone-100"}
+                  className={`relative transition-colors duration-150 ${
+                    isActive ? "text-stone-100" : "text-stone-300 hover:text-stone-100"
+                  }`}
                 >
                   {label}
+                  {isActive && (
+                    <span
+                      className="absolute -bottom-1 left-1/2 h-px w-4 -translate-x-1/2 rounded-full transition-all duration-300"
+                      style={{ backgroundColor: "var(--accent)" }}
+                    />
+                  )}
                 </Link>
               );
             })}

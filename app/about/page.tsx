@@ -14,7 +14,7 @@ export default function AboutPage() {
 
       <Navbar />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 pb-24">
+      <main className="page-enter relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 pb-24">
         <section className="grid gap-10 pt-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
           <div className="space-y-6">
             <p className="text-xs uppercase tracking-[0.4em] text-stone-400">About Me</p>
