@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 const SLIDES = [
-  { bg: "bg-rose-400/70", label: "Photo 1" },
-  { bg: "bg-sky-400/70", label: "Photo 2" },
-  { bg: "bg-emerald-400/70", label: "Photo 3" },
-  { bg: "bg-amber-400/70", label: "Photo 4" },
-  { bg: "bg-violet-400/70", label: "Photo 5" },
+  { src: "/photos/photo1.jpg", alt: "Photo 1" },
+  { src: "/photos/photo2.jpg", alt: "Photo 2" },
+  { src: "/photos/photo3.jpg", alt: "Photo 3" },
 ];
 
 export default function PhotoCarousel() {
@@ -20,10 +19,14 @@ export default function PhotoCarousel() {
     <div className="space-y-4">
       <div className="relative overflow-hidden rounded-2xl border border-stone-700/60">
         {/* Slide */}
-        <div
-          className={`flex h-72 w-full items-center justify-center ${SLIDES[current].bg} transition-colors duration-300`}
-        >
-          <span className="text-lg font-medium text-white/80">{SLIDES[current].label}</span>
+        <div className="relative h-72 w-full md:h-96">
+          <Image
+            src={SLIDES[current].src}
+            alt={SLIDES[current].alt}
+            fill
+            className="object-cover transition-opacity duration-300"
+            priority
+          />
         </div>
 
         {/* Prev / Next buttons */}
@@ -54,8 +57,8 @@ export default function PhotoCarousel() {
             key={i}
             onClick={() => setCurrent(i)}
             aria-label={`Go to slide ${i + 1}`}
-            className={`h-2 w-2 rounded-full transition-all ${
-              i === current ? "w-5 bg-stone-200" : "bg-stone-600 hover:bg-stone-400"
+            className={`h-2 rounded-full transition-all ${
+              i === current ? "w-5 bg-stone-200" : "w-2 bg-stone-600 hover:bg-stone-400"
             }`}
           />
         ))}
