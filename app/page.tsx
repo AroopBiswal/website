@@ -34,10 +34,9 @@ export default function Home() {
               Shipping ad delivery optimizations and internal AI tooling for a 100+ engineer Ads org
             </p>
             <ul className="mt-6 space-y-2 text-sm text-stone-300">
-              <li>Shipped ad delivery optimizations driving $59M in annual revenue.</li>
+              <li>Shipped multiple ad delivery optimizations driving $59M in annual revenue.</li>
               <li>Built the org-wide AI agent (54+ users), saving 4,500+ hours/year on experiment analysis.</li>
               <li>Extended code maintenance tooling, achieving 39x more stale code removal.</li>
-              <li>Built a latency dashboard that cut time-to-insight by 80%.</li>
             </ul>
           </div>
         </section>
@@ -70,7 +69,7 @@ export default function Home() {
               </div>
               <ul className="mt-4 space-y-2 text-sm text-stone-300">
                 <li>Grew Clubly from 0 to 2,000+ student users.</li>
-                <li>Built semantic search using pgvector and Go.</li>
+                <li>Cold-outreached to 150+ clubs across campus to onboard them onto the platform.</li>
                 <li>Led Svelte frontend and added Amplitude Analytics.</li>
               </ul>
             </article>
@@ -163,7 +162,7 @@ export default function Home() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Contact</p>
-              <h2 className="mt-3 text-2xl font-semibold text-stone-50">Let&apos;s build something thoughtful</h2>
+              <h2 className="mt-3 text-2xl font-semibold text-stone-50">Contact me</h2>
               <p className="mt-2 text-sm text-stone-300">
                 Email, calendar, or a quick DM works. I respond within 48 hours.
               </p>

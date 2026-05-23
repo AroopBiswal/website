@@ -19,7 +19,7 @@ export default function AboutPage() {
           <div className="space-y-6">
             <p className="text-xs uppercase tracking-[0.4em] text-stone-400">About Me</p>
             <h1 className="text-4xl font-semibold leading-tight text-stone-50 md:text-5xl">
-              Hi, I&apos;m Aroop
+              More about me
             </h1>
             <p className="text-base leading-7 text-stone-300">
               In my free time I like playing basketball, going to concerts, and trying new food in SF.
@@ -51,10 +51,10 @@ export default function AboutPage() {
           <div className="rounded-3xl border border-stone-700/60 bg-stone-900/60 p-6 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
             <p className="text-xs uppercase tracking-[0.3em] text-stone-400">At A Glance</p>
             <ul className="mt-4 space-y-3 text-sm text-stone-300">
-              <li>Software Engineer, Monetization @ Meta — shipping ad delivery optimizations and internal AI tooling.</li>
-              <li>UC Davis BS Computer Science & Engineering — Regents Scholar, Honors Program, Dean&apos;s Honor List.</li>
-              <li>Built and launched production RAG + LLM systems, a 2,000-user app, and ML pipelines across internships.</li>
-              <li>Based in Menlo Park, CA.</li>
+              <li>SWE @ Meta</li>
+              <li>UC Davis class of 2024</li>
+              <li>I love quality time with my friends</li>
+              <li>I live in SF (my dream city!)</li>
             </ul>
           </div>
         </section>

@@ -57,12 +57,6 @@ export default function Navbar() {
           </div>
         ))}
       </nav>
-      <Link
-        className="rounded-full border border-stone-600/60 px-4 py-2 text-sm text-stone-200 transition hover:border-stone-300 hover:text-stone-50"
-        href="/#contact"
-      >
-        Let&apos;s talk
-      </Link>
     </header>
   );
 }
