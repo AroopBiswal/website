@@ -13,7 +13,7 @@ export default function Home() {
 
       <Navbar />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-24">
+      <main className="page-enter relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-20 px-6 pb-24">
         <section id="about" className="grid gap-10 pt-6 md:grid-cols-[1.2fr_0.8fr] md:items-center">
           <div className="space-y-6">
             <p className="text-lg font-semibold text-stone-100">SWE @ Meta</p>
@@ -51,7 +51,7 @@ export default function Home() {
             <p className="hidden text-sm text-stone-400 md:block">2022 - 2024</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Meaku AI · ML Engineer Intern</h3>
                 <span className="text-xs text-stone-400">Aug 2024 - Sep 2024</span>
@@ -63,7 +63,7 @@ export default function Home() {
                 <li>Built an automated knowledge base pipeline with Firecrawl.</li>
               </ul>
             </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Aggieworks · Full Stack Engineer</h3>
                 <span className="text-xs text-stone-400">Mar 2023 - Jun 2024</span>
@@ -74,7 +74,7 @@ export default function Home() {
                 <li>Led Svelte frontend and added Amplitude Analytics.</li>
               </ul>
             </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Valley Tech Systems · Software Engineer Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2023 - Sep 2023</span>
@@ -84,7 +84,7 @@ export default function Home() {
                 <li>Trained a TensorFlow model to 0.86 accuracy and shipped it to the commercial product.</li>
               </ul>
             </article>
-            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6">
+            <article className="rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-stone-100">Intel Corporation · Software Engineer Intern</h3>
                 <span className="text-xs text-stone-400">Jun 2022 - Sep 2022</span>
@@ -129,7 +129,7 @@ export default function Home() {
             ].map((project) => (
               <article
                 key={project.title}
-                className="flex h-full flex-col justify-between rounded-2xl border border-stone-800 bg-stone-900/70 p-6"
+                className="flex h-full flex-col justify-between rounded-2xl border border-stone-800 bg-stone-900/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-700 hover:shadow-lg hover:shadow-black/20"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
