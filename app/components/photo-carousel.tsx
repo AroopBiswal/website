@@ -19,12 +19,12 @@ export default function PhotoCarousel() {
     <div className="space-y-4">
       <div className="relative overflow-hidden rounded-2xl border border-stone-700/60">
         {/* Slide */}
-        <div className="relative h-72 w-full md:h-96">
+        <div className="relative h-[500px] w-full bg-stone-950">
           <Image
             src={SLIDES[current].src}
             alt={SLIDES[current].alt}
             fill
-            className="object-cover transition-opacity duration-300"
+            className="object-contain transition-opacity duration-300"
             priority
           />
         </div>
