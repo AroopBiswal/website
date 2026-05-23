@@ -17,14 +17,14 @@ export default function PhotoCarousel() {
 
   return (
     <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-2xl border border-stone-700/60">
+      <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-2xl">
         {/* Slide */}
-        <div className="relative h-[500px] w-full bg-stone-950">
+        <div className="relative aspect-[3/4] w-full">
           <Image
             src={SLIDES[current].src}
             alt={SLIDES[current].alt}
             fill
-            className="object-contain transition-opacity duration-300"
+            className="object-cover transition-opacity duration-300"
             priority
           />
         </div>
