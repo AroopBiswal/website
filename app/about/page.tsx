@@ -59,11 +59,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="space-y-6">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-stone-400">Photos</p>
-            <h2 className="mt-3 text-2xl font-semibold text-stone-50">A few moments</h2>
-          </div>
+        <section>
           <PhotoCarousel />
         </section>
       </main>
