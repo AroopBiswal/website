@@ -1,23 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Fredoka, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Aroop · Software Engineer",
   description:
-    "Personal website of Aroop, Software Engineer at Meta. Projects, experience, and contact.",
+    "Personal website of Aroop Biswal, Software Engineer at Google. Projects, experience, and contact.",
 };
+
+// Explicit toggle choice wins; otherwise follow the system setting; if that
+// can't be read, default to dark.
+const themeInit = `(function(){var t;try{t=localStorage.getItem("site-theme")}catch(e){}try{if(t!=="light"&&t!=="dark")t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}catch(e){t=t||"dark"}if(t==="dark")document.documentElement.dataset.theme="dark"})()`;
 
 export default function RootLayout({
   children,
@@ -25,10 +36,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-charcoal text-stone-100 antialiased`}
-      >
+    // suppressHydrationWarning: the theme init script sets data-theme on <html>
+    // before hydration, so the attribute intentionally differs from the SSR HTML.
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${fredoka.variable} ${dmSans.variable} ${inter.variable} antialiased`}>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         {children}
         <Analytics />
       </body>
