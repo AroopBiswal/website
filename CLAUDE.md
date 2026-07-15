@@ -8,11 +8,41 @@
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS v4 (imported via `@import "tailwindcss"` in `globals.css` — no `tailwind.config.js` needed)
-- **Fonts**: Geist Sans + Geist Mono (via `next/font/google`)
+- **Styling**: Tailwind CSS v4 import + plain CSS classes in `globals.css` (the design system is mostly custom CSS, not Tailwind utilities)
+- **Fonts**: Fredoka (display/buttons), DM Sans (body), Inter (cards/headings) via `next/font/google`
 - **React**: v19
 
 Run dev server: `npm run dev`
+
+---
+
+## Design (redesign branch, July 2026)
+
+Playful **neo-brutalist** single-screen site, ported from a Claude Design mockup at
+`/Users/aroop/Documents/Programming/Designs/PersonalWebsiteRedesign/Aroop Site.dc.html` (source of truth for the look).
+
+Key traits:
+- Cream background (`#FBF7EF`) with a rounded 2.5px border frame inset around the viewport; the nav "breaks" the top border
+- Thick black borders + hard offset shadows (`5px 5px 0`) on buttons/stickers
+- **Googly eyes that follow the cursor** everywhere — including as the "oo" in "Aroop" in the hero
+- Floating blob characters with eyes on the home panel
+- **Tab-based SPA**: no page scrolling between sections; nav switches panels (Home, Work, Projects, About, Contact) with a `panelIn` animation
+- Light/Dark theme toggle (button in nav), applied as `html[data-theme="dark"]`. Priority (init script in `layout.tsx`, runs pre-paint to prevent flash): explicit toggle choice in `localStorage("site-theme")` → system `prefers-color-scheme` → **dark** as final fallback. Hero name keeps white fill + black stroke in both themes (`--hero-fill`/`--hero-stroke` only set in `:root`).
+
+### Tokens (CSS vars in `globals.css`)
+| Var | Light | Dark |
+|---|---|---|
+| `--bg` | `#FBF7EF` | `#17130E` |
+| `--panel` | `#FFFFFF` | `#241E17` |
+| `--ink` | `#151310` | `#FBF7EF` |
+| `--line` | `#151310` | `#F2ECE0` |
+| `--muted` | `#6F685D` | `#A79E8F` |
+| `--shadow` | `#151310` | `transparent` |
+
+Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A`, blue `#2E4BD8`, yellow `#FFC93C`, green `#6FB92C`, orange `#F5821F`; interest chips use `#F59E0B` `#3B82F6` `#10B981` `#F43F5E` `#F97316`.
+
+### Key CSS classes (`globals.css`)
+`.site-root` / `.site-frame` / `.site-nav` / `.site-content` (shell) · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` · `.project-row` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
 
 ---
 
@@ -20,94 +50,30 @@ Run dev server: `npm run dev`
 
 ```
 app/
-  layout.tsx           # Root layout — sets fonts, bg-charcoal, metadata
-  page.tsx             # Home page (About Me hero, Experience, Projects, Contact sections)
-  globals.css          # CSS variables, Tailwind import, custom classes
-  about/
-    page.tsx           # Me page (bio, at-a-glance card, photo carousel)
+  layout.tsx           # Fonts (Fredoka/DM Sans/Inter), metadata, theme no-flash init script
+  page.tsx             # Renders <Site />
+  globals.css          # Tokens, keyframes, all design-system classes, responsive rules
+  about/page.tsx       # Redirects to /#about (old route kept alive)
   components/
-    accent-wheel.tsx   # Color picker button (client component)
-    navbar.tsx         # Shared nav (client component — uses usePathname for active state)
-    photo-carousel.tsx # Photo carousel with prev/next + dots (client component)
+    site.tsx           # THE site — client component: nav, theme, tabs, all 5 panels, eye tracking
+public/photos/         # Carousel photos (photo1-3.jpg)
+public/resume.pdf
 ```
 
----
+`site.tsx` internals: content lives in top-level consts (`FEATURED_JOB`, `JOBS`, `PROJECTS`, `INTERESTS`, `PHOTOS`, `GLANCE`, `LINKS`) — edit those to change content. Panels are local components (`HomePanel`, `WorkPanel`, `ProjectsPanel`, `AboutPanel`, `ContactPanel`). Only the active panel is mounted (so `panelIn` runs on switch).
 
-## Design System
+## Behaviors
 
-### Colors (defined in `globals.css` `@theme`)
-| Token | Value | Usage |
-|---|---|---|
-| `charcoal` | `#0c0f10` | Page background |
-| `ember` | `#f5b163` | Default accent |
-| `azure` | `#4fa2b2` | Decorative blobs |
-| `--accent` | CSS variable | Dynamic accent, set by AccentWheel |
+- **Tabs ↔ URL hash**: `/#work`, `/#about`, etc. deep-link; `go()` uses `history.replaceState`
+- **Eyes**: one global `mousemove` listener + rAF updates every `.pupil` via DOM (re-bound on tab change)
+- **About panel**: 3 full-height sections with CSS scroll-snap (intro/interests, photo carousel, at-a-glance) + side dots; photo carousel is translateX-based with real photos
+- **Work/Projects**: internal scrollers; Work shows a "Scroll ↓" hint only when content overflows, hidden after scrolling
+- **Responsive**: media query at 860px — nav shrinks/wraps, content top offset grows, grids collapse to 1 column, decorative blobs hidden
 
-### Key Tailwind Classes
-- `bg-charcoal` — page background
-- `accent-bg` — accent-colored button (dark text on accent bg)
-- `color-wheel` / `color-wheel-orbit` — the animated color picker button
+## Content notes
 
-### Decorative Background (used on every page)
-Both pages share this fixed background pattern — replicate it on any new page:
-```tsx
-<div className="pointer-events-none fixed inset-0 overflow-hidden">
-  <div className="absolute -top-32 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full blur-[120px]"
-    style={{ backgroundColor: "var(--accent)", opacity: 0.2 }} />
-  <div className="absolute bottom-0 right-[-10%] h-[420px] w-[420px] rounded-full bg-azure/15 blur-[140px]" />
-</div>
-```
-
----
-
-## Navigation
-
-Tab order (defined once in `components/navbar.tsx` `NAV_ITEMS` array):
-1. About Me → `/#about` (home hero section)
-2. Experience → `/#experience` (home anchor)
-3. Projects → `/#projects` (home anchor)
-4. Me → `/about` (separate route — bio + carousel page)
-5. Contact → `/#contact` (home anchor)
-
-Active tab styling: `text-stone-100` (bright)
-Inactive tab styling: `hover:text-stone-100` (muted, inherits `text-stone-300` from nav)
-
-Active state logic (in `navbar.tsx`): "Me" tab is active when `pathname === "/about"`; "About Me" tab is active when on `/`. All anchor tabs are never highlighted as active since scroll tracking isn't implemented.
-
-**Important**: Nav is now a shared component — only edit `components/navbar.tsx` to change tabs. Both pages import it.
-
----
-
-## Components
-
-### `Navbar` (`components/navbar.tsx`)
-- Client component — uses `usePathname()` to set the active tab
-- `NAV_ITEMS` array is the single source of truth for tab order and hrefs
-- To add/remove/rename tabs, edit only this array
-- "Me" tab (`/about`) gets `text-stone-100` when on that route; "About Me" gets it on `/`
-
-### `AccentWheel` (`components/accent-wheel.tsx`)
-- Client component — cycles through 6 accent colors on click
-- Persists selection to `localStorage` under key `"site-accent-index"`
-- Sets `--accent` CSS variable on `document.documentElement`
-- Accent colors: `#f5b163`, `#7bdff2`, `#ff7ab2`, `#9adf7d`, `#f4e77d`, `#c4a1ff`
-
-### `PhotoCarousel` (`components/photo-carousel.tsx`)
-- Client component — carousel with prev/next arrows and animated dot indicators
-- Currently uses placeholder colored slides (`SLIDES` array)
-- To add real photos: replace the `SLIDES` array entries — swap `bg` color class for an `<img>` or `next/image` element
-- Dots animate width (`w-2` → `w-5`) to indicate active slide
-
----
-
-## Patterns & Conventions
-
-- **Client components**: Any component with state or browser APIs needs `"use client"` at the top
-- **Section labels**: Use `<p className="text-xs uppercase tracking-[0.4em] text-stone-400">` above section headings
-- **Cards**: `rounded-2xl border border-stone-800 bg-stone-900/70 p-6`
-- **Hero card**: `rounded-3xl border border-stone-700/60 bg-stone-900/60 p-6 shadow-[0_0_60px_rgba(0,0,0,0.35)]`
-- **Max width container**: `mx-auto w-full max-w-6xl px-6`
-- **New pages**: Copy the header + background blobs from an existing page; use `relative z-10` on header and main
+- Hero + featured Work card say **Google (SWE, Google Cloud, 2026—Now)** — came from the newer design mockup, not the old site (which said Meta). Google card has only a one-line blurb; add real bullets when available.
+- Contact links: aroopbiswal@gmail.com, github.com/AroopBiswal, linkedin.com/in/AroopBiswal, /resume.pdf
 
 ---
 
@@ -115,13 +81,7 @@ Active state logic (in `navbar.tsx`): "Me" tab is active when `pathname === "/ab
 
 | Date | Change |
 |---|---|
-| Initial | Home page with hero, experience, projects, contact sections |
-| +AccentWheel | Color picker in header top-left; accent persisted to localStorage |
-| +About page | `/about` route with bio and at-a-glance card |
-| +Nav tab | About tab added to nav; later renamed "About Me" |
-| +Reorder nav | About Me moved to third position (Experience, Projects, About Me, Contact) |
-| +PhotoCarousel | Carousel with 5 placeholder color slides added to About Me page |
-| +Navbar component | Extracted shared `Navbar` component; nav is now single source of truth |
-| +About Me tab | Added "About Me" as first tab → `/#about`; hero section given `id="about"` |
-| Rename tab | `/about` page tab renamed from "About Me" to "Me" |
-| Resume sync | Updated all content from resume: real Meta metrics ($59.1M revenue, AI agent 54+ users), corrected experience entries (removed Intel 2018/2019, added Aggieworks/Clubly), replaced placeholder projects with real ones (Notion Budget Sync, Clubly, Expense Splitter), fixed contact links (email, LinkedIn, GitHub) |
+| Initial | Dark charcoal multi-page site (hero, experience, projects, contact + /about page) |
+| … | (see git history for pre-redesign iterations) |
+| Jul 2026 | **Full redesign** on `redesign` branch: ported neo-brutalist Claude Design mockup — tabbed single-screen SPA, googly eyes, light/dark toggle, Fredoka/DM Sans/Inter. Old Navbar/AccentWheel/PhotoCarousel components deleted; /about now redirects to /#about. Populated with real content (Meta $59M, Aggieworks, Meaku, Valley Tech, Intel; Notion Budget Sync, Clubly, Expense Splitter). |
+| Jul 2026 | **Mobile fixes**: hero name is now fully em-based (eyes, strokes, "A" triangle scale with clamp()ed font-size) and theme-aware via `--hero-fill`/`--hero-stroke` (dark mode gets visible outlines); About sections free-scroll on ≤860px (snap off, `height:auto`, side dots hidden) so tall content isn't clipped; Home/Contact panels use `margin:auto` + `overflow:auto` so short screens can scroll; contact card padding shrinks on mobile; nav divider hidden on mobile; mobile frame hugs the edge (`inset: 44px 14px 18px`) with content inset to 32px so nothing sits on the frame lines; scrollable panels use `.no-scrollbar`. User-verified on device (dark mode, all tabs). **Gotcha**: macOS headless Chrome can't screenshot <500px windows honestly (layout renders wider than capture) — verify mobile with real devices/devtools. Also: stale `next-server` processes hold the port and 500 new CSS chunks — `pkill -f next-server` before restarting. |
