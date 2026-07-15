@@ -36,7 +36,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the theme init script sets data-theme on <html>
+    // before hydration, so the attribute intentionally differs from the SSR HTML.
+    <html lang="en" suppressHydrationWarning>
       <body className={`${fredoka.variable} ${dmSans.variable} ${inter.variable} antialiased`}>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         {children}
