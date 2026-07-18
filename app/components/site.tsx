@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
+import type { Job, Project, WorkData } from "@/lib/notion";
 
 const TABS = ["home", "work", "projects", "about", "contact"] as const;
 type Tab = (typeof TABS)[number];
@@ -12,75 +13,6 @@ const LINKS = {
   linkedin: "https://linkedin.com/in/AroopBiswal/",
   resume: "/resume.pdf",
 };
-
-const FEATURED_JOB = {
-  company: "Google",
-  role: "SWE, Google Cloud",
-  period: "2026 — Now",
-  blurb: "Building infrastructure for Google Cloud.",
-};
-
-const JOBS = [
-  {
-    company: "Meta",
-    role: "SWE, Monetization",
-    period: "2025–26",
-    blurb:
-      "Shipped ad-delivery optimizations driving $59M/yr in revenue and built an org-wide AI agent (54+ users) saving 4,500+ hours/year.",
-  },
-  {
-    company: "Aggieworks",
-    role: "Full Stack Engineer",
-    period: "2023–24",
-    blurb:
-      "Grew Clubly from 0 to 2,000+ student users; led the Svelte frontend and added Amplitude analytics.",
-  },
-  {
-    company: "Meaku AI",
-    role: "ML Engineer Intern",
-    period: "2024",
-    blurb:
-      "Launched a RAG agent on a client site with 20k+ monthly visitors; dynamic prompt generation cut latency 15%.",
-  },
-  {
-    company: "Valley Tech Systems",
-    role: "SWE Intern",
-    period: "2023",
-    blurb:
-      "Led 3 interns building a pipeline that collected and labeled 4,000+ training images; shipped a TensorFlow model at 0.86 accuracy.",
-  },
-  {
-    company: "Intel",
-    role: "SWE Intern",
-    period: "2022",
-    blurb:
-      "Built a GStreamer video-processing pipeline with real-time AI effects; containerized and ported it from Linux to WSL 2 with Docker.",
-  },
-];
-
-const PROJECTS = [
-  {
-    num: "01",
-    title: "Notion Budget Sync",
-    desc: "Imports bank transactions in any format into a Notion budget database — an LLM detects the file format once, then every sync is free and deterministic.",
-    tags: ["Python", "LangChain"],
-    href: "https://github.com/AroopBiswal/notion-budget-sync",
-  },
-  {
-    num: "02",
-    title: "Clubly",
-    desc: "Student club discovery platform grown from 0 to 2,000+ UC Davis students, with semantic search powered by pgvector.",
-    tags: ["Go", "Svelte"],
-    href: "https://clubly.org/",
-  },
-  {
-    num: "03",
-    title: "Expense Splitter",
-    desc: "Splits shared expenses across groups, tracks balances, and settles up — built for clarity when money gets complicated.",
-    tags: ["TypeScript", "React"],
-    href: null,
-  },
-];
 
 const INTERESTS: { label: string; bg: string; fg?: string }[] = [
   { label: "Travel", bg: "#F97316" },
@@ -127,7 +59,7 @@ function Eye({
   );
 }
 
-export default function Site() {
+export default function Site({ work, projects }: { work: WorkData; projects: Project[] }) {
   const [tab, setTab] = useState<Tab>("home");
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
@@ -219,8 +151,8 @@ export default function Site() {
 
       <div className="site-content">
         {tab === "home" && <HomePanel go={go} />}
-        {tab === "work" && <WorkPanel />}
-        {tab === "projects" && <ProjectsPanel />}
+        {tab === "work" && <WorkPanel featured={work.featured} jobs={work.jobs} />}
+        {tab === "projects" && <ProjectsPanel projects={projects} />}
         {tab === "about" && <AboutPanel />}
         {tab === "contact" && <ContactPanel />}
       </div>
@@ -319,7 +251,7 @@ function HomePanel({ go }: { go: (t: Tab) => void }) {
 
 /* ============ WORK ============ */
 
-function WorkPanel() {
+function WorkPanel({ featured, jobs }: { featured: Job; jobs: Job[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [hint, setHint] = useState(false);
 
@@ -343,15 +275,15 @@ function WorkPanel() {
           <div className="card" style={{ gridColumn: "1 / -1", padding: "32px 34px", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <h3 style={{ fontWeight: 600, fontSize: 24, margin: 0, letterSpacing: "-0.3px" }}>{FEATURED_JOB.company}</h3>
-                <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)" }}>{FEATURED_JOB.role}</span>
+                <h3 style={{ fontWeight: 600, fontSize: 24, margin: 0, letterSpacing: "-0.3px" }}>{featured.company}</h3>
+                <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)" }}>{featured.role}</span>
               </div>
-              <span className="period-pill">{FEATURED_JOB.period}</span>
+              <span className="period-pill">{featured.period}</span>
             </div>
-            <p style={{ fontSize: 16, lineHeight: 1.45, margin: 0, color: "var(--muted)" }}>{FEATURED_JOB.blurb}</p>
+            <p style={{ fontSize: 16, lineHeight: 1.45, margin: 0, color: "var(--muted)" }}>{featured.blurb}</p>
           </div>
 
-          {JOBS.map((job) => (
+          {jobs.map((job) => (
             <div key={job.company} className="card work-card">
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -371,7 +303,7 @@ function WorkPanel() {
 
 /* ============ PROJECTS ============ */
 
-function ProjectsPanel() {
+function ProjectsPanel({ projects }: { projects: Project[] }) {
   return (
     <div className="panel" style={{ flexDirection: "column", gap: 20 }}>
       <div className="panel-head">
@@ -380,7 +312,7 @@ function ProjectsPanel() {
       </div>
       <div className="no-scrollbar" style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
         <div className="project-list inter">
-          {PROJECTS.map((p) => {
+          {projects.map((p) => {
             const inner = (
               <>
                 <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)", letterSpacing: 1 }}>{p.num}</span>
