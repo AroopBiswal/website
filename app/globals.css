@@ -2,9 +2,10 @@
 
 /* ---- Design tokens (light is default, dark set via html[data-theme="dark"]) ---- */
 :root {
-  /* Cool neutral canvas — reads more like a modern product site than the
-     original warm cream, while the hard borders/shadows keep the character. */
-  --bg: #f1f3f6;
+  /* Near-white neutral canvas — reads more like a modern product site than
+     the original warm cream, while the hard borders/shadows keep the
+     character. Cards separate via border + --card-shadow, not bg contrast. */
+  --bg: #fafafb;
   --panel: #ffffff;
   --ink: #14161a;
   --line: #14161a;
@@ -304,12 +305,12 @@ a {
   transform: translateY(-3px) rotate(var(--tilt, -2deg));
 }
 
-/* ---- Section headers ---- */
+/* ---- Section headers: small uppercase kicker stacked above the title ---- */
 .panel-head {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
   flex: none;
 }
 
@@ -326,7 +327,7 @@ a {
   font-family: var(--font-inter), sans-serif;
   font-weight: 600;
   font-size: 36px;
-  margin: 0 0 0 8px;
+  margin: 0;
   letter-spacing: -0.8px;
 }
 
