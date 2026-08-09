@@ -9,40 +9,67 @@
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4 import + plain CSS classes in `globals.css` (the design system is mostly custom CSS, not Tailwind utilities)
-- **Fonts**: Fredoka (display/buttons), DM Sans (body), Inter (cards/headings) via `next/font/google`
+- **Fonts**: Fredoka (hero/sticker buttons), DM Sans (body), Inter (cards/headings), Space Grotesk (nav / menu bar) via `next/font/google`
 - **React**: v19
 
 Run dev server: `npm run dev`
 
 ---
 
-## Design (redesign branch, July 2026)
+## Design (scroll-redesign branch, Aug 2026)
 
-Playful **neo-brutalist** single-screen site, ported from a Claude Design mockup at
-`/Users/aroop/Documents/Programming/Designs/PersonalWebsiteRedesign/Aroop Site.dc.html` (source of truth for the look).
+**Neo-brutalist character on a modern, professional canvas.** Originally ported from a Claude Design mockup at
+`/Users/aroop/Documents/Programming/Designs/PersonalWebsiteRedesign/Aroop Site.dc.html` (still the reference for the playful bits), since evolved.
 
 Key traits:
-- Cream background (`#FBF7EF`) with a rounded 2.5px border frame inset around the viewport; the nav "breaks" the top border
-- Thick black borders + hard offset shadows (`5px 5px 0`) on buttons/stickers
+- Cool neutral background (`#F1F3F6` light / `#101215` dark) — replaced the original warm cream to read more professional
+- A rounded 2px border frame inset around the viewport; the nav "breaks" the top border
+- Thick black borders + hard offset shadows (`4px 4px 0`) on buttons/stickers; white cards get a *soft* elevation shadow (`--card-shadow`) instead
 - **Googly eyes that follow the cursor** everywhere — including as the "oo" in "Aroop" in the hero
-- Floating blob characters with eyes on the home panel
-- **Tab-based SPA**: no page scrolling between sections; nav switches panels (Home, Work, Projects, About, Contact) with a `panelIn` animation
-- Light/Dark theme toggle (button in nav), applied as `html[data-theme="dark"]`. Priority (init script in `layout.tsx`, runs pre-paint to prevent flash): explicit toggle choice in `localStorage("site-theme")` → system `prefers-color-scheme` → **dark** as final fallback. Hero name keeps white fill + black stroke in both themes (`--hero-fill`/`--hero-stroke` only set in `:root`).
+- Floating blob characters with eyes on the home section
+- **Two scrolling pages** (no longer a tabbed SPA): `/` scrolls Home → Work → Projects → Contact; `/about` is its own scrolling page. See "Scroll architecture" below.
+- Light/Dark theme toggle (button in nav), applied as `html[data-theme="dark"]`. Priority (init script in `layout.tsx`, runs pre-paint to prevent flash): explicit toggle choice in `localStorage("site-theme")` → system `prefers-color-scheme` → **dark** as final fallback. Hero name keeps white fill + dark stroke in both themes (`--hero-fill`/`--hero-stroke` only set in `:root`).
 
 ### Tokens (CSS vars in `globals.css`)
 | Var | Light | Dark |
 |---|---|---|
-| `--bg` | `#FBF7EF` | `#17130E` |
-| `--panel` | `#FFFFFF` | `#241E17` |
-| `--ink` | `#151310` | `#FBF7EF` |
-| `--line` | `#151310` | `#F2ECE0` |
-| `--muted` | `#6F685D` | `#A79E8F` |
-| `--shadow` | `#151310` | `transparent` |
+| `--bg` | `#F1F3F6` | `#101215` |
+| `--panel` | `#FFFFFF` | `#191C21` |
+| `--ink` | `#14161A` | `#EEF0F4` |
+| `--line` | `#14161A` | `#EEF0F4` |
+| `--muted` | `#5F6672` | `#98A0AD` |
+| `--shadow` | `#14161A` | `transparent` |
+| `--card-shadow` | soft 2-layer | `none` |
+| `--hairline` | `rgba(20,22,26,.14)` | `rgba(238,240,244,.16)` |
+
+Geometry vars (drive the fixed chrome): `--nav-top`, `--nav-h` (**measured at runtime**, see below), `--frame-inset-x`, `--frame-top`, `--frame-bottom`, `--content-pad-x`.
 
 Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A`, blue `#2E4BD8`, yellow `#FFC93C`, green `#6FB92C`, orange `#F5821F`; interest chips use `#F59E0B` `#3B82F6` `#10B981` `#F43F5E` `#F97316`.
 
 ### Key CSS classes (`globals.css`)
-`.site-root` / `.site-frame` / `.site-nav` / `.site-content` (shell) · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` · `.project-row` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
+`.site-root` / `.site-frame` / `.site-gutter`(`-top`/`-bottom`) / `.site-nav` / `.site-content` (shell) · `.section`(+`.section-center`) · `.scroll-cue` · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big button w/ hard shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` · `.project-row` · `.about-intro` · `.interest-chip` · `.dot` / `.about-dots`
+
+### Scroll architecture (the non-obvious part)
+
+The **document** scrolls; the frame and nav are `position: fixed` layers on top of it. Z-order matters:
+
+| z | layer | why |
+|---|---|---|
+| 5 | `.site-content` | the scrolling content |
+| 8 | `.site-gutter-top/bottom` | opaque `--bg` strips that hide content *before* it reaches the frame lines |
+| 9 | `.site-frame` | drawn over the gutters so the border stays crisp |
+| 10 | `.site-nav` | its own `--bg` block is what "breaks" the top border |
+
+Without the gutters, scrolling text would visibly cross the frame border. The top gutter height is
+`calc(var(--nav-top) + var(--nav-h) + 6px)`, so content disappears just under the nav.
+
+**`--nav-h` is measured, not hardcoded** — the nav wraps to 2 rows on phones. `SiteNav` publishes
+`el.offsetHeight` to `document.documentElement` via a `ResizeObserver`; the gutter height *and* every
+`.section`'s top padding key off it. Hardcoding it breaks mobile.
+
+Sections are `min-height: 100dvh` and grow when content is taller (Work does). Anchors work natively
+(`html { scroll-behavior: smooth }` + `#work` hrefs) — no JS navigation, so deep links and SSR both just work.
+`scroll-padding-top` is deliberately **0**: each section's own top padding already clears the nav.
 
 ---
 
@@ -50,17 +77,22 @@ Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A
 
 ```
 app/
-  layout.tsx           # Fonts (Fredoka/DM Sans/Inter), metadata, theme no-flash init script
-  page.tsx             # Renders <Site />
+  layout.tsx           # Fonts (Fredoka/DM Sans/Inter/Space Grotesk), metadata, theme no-flash init script
+  page.tsx             # Server Component: fetches Notion, renders <Site />
   globals.css          # Tokens, keyframes, all design-system classes, responsive rules
-  about/page.tsx       # Redirects to /#about (old route kept alive)
+  about/page.tsx       # Real /about route (metadata) → renders <AboutView />
   components/
-    site.tsx           # THE site — client component: nav, theme, tabs, all 5 panels, eye tracking
+    shell.tsx          # SHARED by both pages: LINKS, <Eye>, useGooglyEyes, useScrollSpy,
+                       #   useTheme, <SiteNav>, <ScrollCue>, <SiteChrome> (frame + gutters)
+    site.tsx           # "/" — Home/Work/Projects/Contact sections in one scroll
+    about-view.tsx     # "/about" — intro / photos / at-a-glance sections + side dots
 public/photos/         # Carousel photos (photo1-3.jpg)
 public/resume.pdf
 ```
 
-`site.tsx` internals: **Work and Projects content comes from Notion at build time** (see below) — passed into `<Site work={...} projects={...} />` as props. The still-hardcoded consts are `INTERESTS`, `PHOTOS`, `GLANCE`, `LINKS` — edit those to change content. Panels are local components (`HomePanel`, `WorkPanel`, `ProjectsPanel`, `AboutPanel`, `ContactPanel`); `WorkPanel`/`ProjectsPanel` now take data as props. Only the active panel is mounted (so `panelIn` runs on switch).
+- `site.tsx`: **Work and Projects content comes from Notion at build time** (see below), passed into `<Site work={...} projects={...} />` as props. Sections are local components (`HomeSection`, `WorkSection`, `ProjectsSection`, `ContactSection`) — all mounted at once, since the page scrolls.
+- `about-view.tsx`: owns the still-hardcoded `INTERESTS`, `PHOTOS`, `GLANCE` consts — edit those to change About content.
+- `shell.tsx`: owns `LINKS`. `<SiteNav page="home"|"about">` decides whether section links are `#work` or `/#work`, so the same nav serves both pages.
 
 ## Data source (Notion, build-time)
 
@@ -73,11 +105,11 @@ Work & Projects content lives in two Notion databases, fetched **at build time o
 
 ## Behaviors
 
-- **Tabs ↔ URL hash**: `/#work`, `/#about`, etc. deep-link; `go()` uses `history.replaceState`
-- **Eyes**: one global `mousemove` listener + rAF updates every `.pupil` via DOM (re-bound on tab change)
-- **About panel**: 3 full-height sections with CSS scroll-snap (intro/interests, photo carousel, at-a-glance) + side dots; photo carousel is translateX-based with real photos
-- **Work/Projects**: internal scrollers; Work shows a "Scroll ↓" hint only when content overflows, hidden after scrolling
-- **Responsive**: media query at 860px — nav shrinks/wraps, content top offset grows, grids collapse to 1 column, decorative blobs hidden
+- **Nav = anchors**: plain `<a href="#work">` (or `/#work` from `/about`). `/#work`, `/#contact` deep-link natively; no JS routing, no `history` calls. The active pill comes from `useScrollSpy` (IntersectionObserver, `rootMargin: "-45% 0px -50% 0px"` — whichever section crosses the ~45% reading line wins). Scroll position is **not** written back to the hash (that reads as jarring).
+- **Eyes**: one global `mousemove` listener + rAF updates every `.pupil` via DOM. The DOM is re-queried each frame, so eyes mounted later are picked up automatically — no dependency wiring needed.
+- **`/about`**: 3 document-scrolled sections (intro/interests, photo carousel, at-a-glance) + fixed side dots driven by the same `useScrollSpy`; dots call `scrollIntoView`. Photo carousel is translateX-based with real photos. Scroll-snap was **removed** with the tab layout — full-height sections in a document scroll don't need it and it fought tall content.
+- **Responsive**: media query at 860px — nav wraps (and `--nav-h` grows to match), grids collapse to 1 column, side dots + decorative blobs hidden, frame hugs the edge.
+- **Scrollbars are hidden** (`html { scrollbar-width: none }`), matching the framed look; the "Scroll" cues at the bottom of the first screen are the affordance.
 
 ## Content notes
 
@@ -94,4 +126,5 @@ Work & Projects content lives in two Notion databases, fetched **at build time o
 | … | (see git history for pre-redesign iterations) |
 | Jul 2026 | **Full redesign** on `redesign` branch: ported neo-brutalist Claude Design mockup — tabbed single-screen SPA, googly eyes, light/dark toggle, Fredoka/DM Sans/Inter. Old Navbar/AccentWheel/PhotoCarousel components deleted; /about now redirects to /#about. Populated with real content (Meta $59M, Aggieworks, Meaku, Valley Tech, Intel; Notion Budget Sync, Clubly, Expense Splitter). |
 | Jul 2026 | **Notion data source** on `notion-db` branch: Work & Projects content moved out of hardcoded consts into two Notion DBs, fetched at build time via `lib/notion.ts` (`@notionhq/client` v5) + `app/page.tsx` (`force-static` async Server Component, props into client `<Site>`). Fully static, manual-redeploy strategy — no ISR/runtime fetching. Loud-fail on missing env / empty DB. Verified: live content bakes into static `index.html`. |
+| Aug 2026 | **Scroll redesign** on `scroll-redesign` branch: killed the tabbed SPA. `/` is now one continuous scroll (Home → Work → Projects → Contact) and **About moved to its own scrolling page at `/about`** (was a redirect to `/#about`). Nav became plain anchors + `useScrollSpy`; shared chrome extracted to `components/shell.tsx`; new `components/about-view.tsx`. Fixed frame/nav over a scrolling document needs the `.site-gutter` strips + measured `--nav-h` (see "Scroll architecture"). Nav/menu font → **Space Grotesk**. Light mode moved off cream to a cool neutral `#F1F3F6` (dark → neutral `#101215`) with soft card elevation + hairline rules, for a more professional read. Removed: `.panel`, `panelIn`, `.about-scroll`/`.about-section` snap, Work's "Scroll ↓" overflow hint, `.no-scrollbar`. Verified: lint clean, build static (`/` + `/about`), no h-overflow at 1440 or 390, Notion content still bakes in. **Gotcha**: Chrome's `--headless --screenshot` flag renders *scrolled* pages wrong (fixed layers get painted at the scroll offset, content goes blank) — drive it over CDP instead (`Emulation.setDeviceMetricsOverride` + `scrollIntoView` + `Page.captureScreenshot`), which also makes narrow-width captures honest. |
 | Jul 2026 | **Mobile fixes**: hero name is now fully em-based (eyes, strokes, "A" triangle scale with clamp()ed font-size) and theme-aware via `--hero-fill`/`--hero-stroke` (dark mode gets visible outlines); About sections free-scroll on ≤860px (snap off, `height:auto`, side dots hidden) so tall content isn't clipped; Home/Contact panels use `margin:auto` + `overflow:auto` so short screens can scroll; contact card padding shrinks on mobile; nav divider hidden on mobile; mobile frame hugs the edge (`inset: 44px 14px 18px`) with content inset to 32px so nothing sits on the frame lines; scrollable panels use `.no-scrollbar`. User-verified on device (dark mode, all tabs). **Gotcha**: macOS headless Chrome can't screenshot <500px windows honestly (layout renders wider than capture) — verify mobile with real devices/devtools. Also: stale `next-server` processes hold the port and 500 new CSS chunks — `pkill -f next-server` before restarting. |

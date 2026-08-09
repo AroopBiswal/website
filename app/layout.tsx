@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fredoka, Inter } from "next/font/google";
+import { DM_Sans, Fredoka, Inter, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -18,6 +18,14 @@ const dmSans = DM_Sans({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+});
+
+// Nav / menu bar type: geometric grotesque, reads more modern and professional
+// than the playful Fredoka used for the hero and sticker buttons.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -39,7 +47,9 @@ export default function RootLayout({
     // suppressHydrationWarning: the theme init script sets data-theme on <html>
     // before hydration, so the attribute intentionally differs from the SSR HTML.
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fredoka.variable} ${dmSans.variable} ${inter.variable} antialiased`}>
+      <body
+        className={`${fredoka.variable} ${dmSans.variable} ${inter.variable} ${spaceGrotesk.variable} antialiased`}
+      >
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         {children}
         <Analytics />

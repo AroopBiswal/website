@@ -1,6 +1,12 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import AboutView from "../components/about-view";
 
-// The old /about page is now the About tab on the single-page site.
+export const metadata: Metadata = {
+  title: "About · Aroop Biswal",
+  description:
+    "A bit about Aroop Biswal — interests, photos, and the short version at a glance.",
+};
+
 export default function AboutPage() {
-  redirect("/#about");
+  return <AboutView />;
 }
