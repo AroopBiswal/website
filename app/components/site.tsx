@@ -176,6 +176,11 @@ function ProjectsSection({ projects }: { projects: Project[] }) {
               <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)", letterSpacing: 1 }}>{p.num}</span>
               <h3 style={{ fontWeight: 600, fontSize: "clamp(22px, 3vw, 30px)", margin: 0, color: "var(--ink)", letterSpacing: "-0.8px", lineHeight: 1.1 }}>
                 {p.title}
+                {p.href && (
+                  <span aria-hidden style={{ fontSize: "0.55em", fontWeight: 500, color: "var(--muted)", marginLeft: 10, verticalAlign: "0.25em" }}>
+                    ↗
+                  </span>
+                )}
               </h3>
               <p style={{ fontSize: 13, lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>{p.desc}</p>
               <div className="proj-tags" style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
@@ -206,38 +211,30 @@ function ProjectsSection({ projects }: { projects: Project[] }) {
 /* ============ CONTACT ============ */
 
 function ContactSection() {
-  const linkStyle = (bg: string, tilt = "-2deg"): CSSProperties => ({
-    fontFamily: "var(--font-inter)",
-    fontWeight: 600,
-    fontSize: 16,
-    color: "#151310",
-    background: bg,
-    border: "3px solid #151310",
-    borderRadius: 999,
-    padding: "12px 24px",
-    boxShadow: "5px 5px 0 var(--shadow)",
-    ["--tilt" as string]: tilt,
-  });
-
   return (
     <section id="contact" className="section">
       <div className="contact-card">
-        <span className="float-deco" style={{ position: "absolute", top: 22, left: 30, width: 40, height: 40, background: "#FFC93C", border: "4px solid #151310", borderRadius: "50%", animation: "floaty 5s ease-in-out infinite" }} />
-        <div style={{ display: "flex", gap: 20, justifyContent: "center", marginBottom: 28 }}>
-          <Eye size={58} pupil={27} border={5} style={{ boxShadow: "4px 4px 0 var(--shadow)" }} />
-          <Eye size={58} pupil={27} border={5} style={{ boxShadow: "4px 4px 0 var(--shadow)" }} />
+        <div style={{ display: "flex", gap: 18, justifyContent: "center", marginBottom: 22 }}>
+          <Eye size={54} pupil={25} border={4} />
+          <Eye size={54} pupil={25} border={4} />
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center" }}>
-          <a className="sticker" href={LINKS.email} style={linkStyle("#FFC93C")}>
+        <h2 className="inter" style={{ fontWeight: 700, fontSize: "clamp(26px, 3.4vw, 36px)", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
+          Let&apos;s connect
+        </h2>
+        <p style={{ margin: "0 0 30px", fontSize: 16, lineHeight: 1.5, color: "rgba(255,255,255,0.85)" }}>
+          The fastest way to reach me is email — always happy to chat.
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+          <a className="contact-link" href={LINKS.email}>
             Email
           </a>
-          <a className="sticker" href={LINKS.github} target="_blank" rel="noreferrer" style={linkStyle("#fff", "2deg")}>
+          <a className="contact-link" href={LINKS.github} target="_blank" rel="noreferrer" style={{ ["--tilt" as string]: "2deg" }}>
             GitHub
           </a>
-          <a className="sticker" href={LINKS.linkedin} target="_blank" rel="noreferrer" style={linkStyle("#fff")}>
+          <a className="contact-link" href={LINKS.linkedin} target="_blank" rel="noreferrer">
             LinkedIn
           </a>
-          <a className="sticker" href={LINKS.resume} target="_blank" rel="noreferrer" style={linkStyle("#fff", "2deg")}>
+          <a className="contact-link" href={LINKS.resume} target="_blank" rel="noreferrer" style={{ ["--tilt" as string]: "2deg" }}>
             Résumé
           </a>
         </div>
