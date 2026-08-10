@@ -124,7 +124,7 @@ function HomeSection() {
 
 function WorkSection({ featured, jobs }: { featured: Job; jobs: Job[] }) {
   return (
-    <section id="work" className="section">
+    <section id="work" className="section section-split">
       <div className="panel-head">
         <span className="panel-label">Experience</span>
         <h2 className="panel-title">What I do</h2>
@@ -163,7 +163,7 @@ function WorkSection({ featured, jobs }: { featured: Job; jobs: Job[] }) {
 
 function ProjectsSection({ projects }: { projects: Project[] }) {
   return (
-    <section id="projects" className="section">
+    <section id="projects" className="section section-split">
       <div className="panel-head">
         <span className="panel-label">Selected work</span>
         <h2 className="panel-title">Things I&apos;ve made</h2>

@@ -199,6 +199,25 @@ a {
   align-items: center;
 }
 
+/* Two-column sections (Work, Projects): the title lives in a left rail and
+   sticks under the nav while the content column scrolls past. The pair is
+   capped and centered so ultra-wide screens don't strand the title. */
+.section-split {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  column-gap: 64px;
+  align-items: start;
+  align-content: center;
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.section-split .panel-head {
+  position: sticky;
+  top: calc(var(--nav-top) + var(--nav-h) + 48px);
+}
+
 .scroll-cue {
   position: absolute;
   bottom: 30px;
@@ -356,7 +375,6 @@ a {
   padding: 6px 2px 10px;
   max-width: 880px;
   width: 100%;
-  margin: 0 auto;
 }
 
 .card {
@@ -398,13 +416,12 @@ a {
   flex-direction: column;
   border-top: 1px solid var(--hairline);
   max-width: 1080px;
-  margin: 0 auto;
   width: 100%;
 }
 
 .project-row {
   display: grid;
-  grid-template-columns: 88px 1fr 340px 200px;
+  grid-template-columns: 56px 1fr 320px 180px;
   align-items: center;
   gap: 24px;
   padding: 26px 8px;
@@ -530,6 +547,16 @@ html[data-theme="dark"] .contact-card {
      would dangle below it with nothing to connect to — show just the line. */
   .frame-top svg {
     display: none;
+  }
+
+  /* Split sections stack again on small screens; the title stops sticking. */
+  .section-split {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section-split .panel-head {
+    position: static;
   }
 
   .section {
