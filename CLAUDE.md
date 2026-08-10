@@ -23,7 +23,7 @@ Run dev server: `npm run dev`
 
 Key traits:
 - Near-white neutral background (`#FAFAFB` light / `#101215` dark) — replaced the original warm cream to read more professional; cards separate via border + soft `--card-shadow`, not bg contrast
-- A rounded 1.5px border frame inset around the viewport; the nav "breaks" the top border
+- **Top-only frame**: a 1.5px line across the top that rounds the corners, drops ~95px down each side, and ends in a small inward spiral curl. Built as two fixed-size SVG end-pieces (`FrameCurl` in `shell.tsx`) + a stretchy `border-top` div between them, so the curls never distort with viewport width. No side/bottom borders. The nav still "breaks" the line (on mobile the wrapped nav covers the whole top run, leaving just the two hanging curls — intended).
 - Hero only: thick black borders + hard offset shadows (`4px 4px 0`) on stickers/chips. Cards/nav/contact use `--hairline` borders + soft shadows (`--card-shadow`, `--card-shadow-hover`); nav active state is a solid ink pill; theme toggle is a ghost button; kickers are `--accent` (blue, lighter in dark mode); linked project rows get a muted ↗; contact card is border-less red with a red glow shadow (`box-shadow: none` in dark) and `.contact-link` white pills
 - **Googly eyes that follow the cursor** everywhere — including as the "oo" in "Aroop" in the hero
 - Floating blob characters with eyes on the home section
@@ -44,12 +44,12 @@ Key traits:
 | `--hairline` | `rgba(20,22,26,.12)` | `rgba(238,240,244,.14)` |
 | `--accent` | `#2E4BD8` | `#8B9DFF` |
 
-Geometry vars (drive the fixed chrome): `--nav-top`, `--nav-h` (**measured at runtime**, see below), `--frame-inset-x`, `--frame-top`, `--frame-bottom`, `--content-pad-x`.
+Geometry vars (drive the fixed chrome): `--nav-top`, `--nav-h` (**measured at runtime**, see below), `--frame-inset-x`, `--frame-top`, `--content-pad-x`.
 
 Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A`, blue `#2E4BD8`, yellow `#FFC93C`, green `#6FB92C`, orange `#F5821F`; interest chips use `#F59E0B` `#3B82F6` `#10B981` `#F43F5E` `#F97316`.
 
 ### Key CSS classes (`globals.css`)
-`.site-root` / `.site-frame` / `.site-gutter`(`-top`/`-bottom`) / `.site-nav` / `.site-content` (shell) · `.section`(+`.section-center`) · `.scroll-cue` · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big hero button w/ hard shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small hero button) · `.card` / `.work-card` · `.project-row` · `.contact-link` · `.about-intro` · `.interest-chip` · `.dot` / `.about-dots`
+`.site-root` / `.frame-top`(+`.frame-top-line`) / `.site-gutter-top` / `.site-nav` / `.site-content` (shell) · `.section`(+`.section-center`) · `.scroll-cue` · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big hero button w/ hard shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small hero button) · `.card` / `.work-card` · `.project-row` · `.contact-link` · `.about-intro` · `.interest-chip` · `.dot` / `.about-dots`
 
 ### Scroll architecture (the non-obvious part)
 
@@ -58,11 +58,11 @@ The **document** scrolls; the frame and nav are `position: fixed` layers on top 
 | z | layer | why |
 |---|---|---|
 | 5 | `.site-content` | the scrolling content |
-| 8 | `.site-gutter-top/bottom` | opaque `--bg` strips that hide content *before* it reaches the frame lines |
-| 9 | `.site-frame` | drawn over the gutters so the border stays crisp |
+| 8 | `.site-gutter-top` | opaque `--bg` strip that hides content *before* it reaches the frame line (no bottom gutter — the frame is top-only) |
+| 9 | `.frame-top` | the line + SVG curl end-pieces, drawn over the gutter so it stays crisp |
 | 10 | `.site-nav` | its own `--bg` block is what "breaks" the top border |
 
-Without the gutters, scrolling text would visibly cross the frame border. The top gutter height is
+Without the gutter, scrolling text would visibly cross the frame line. Its height is
 `calc(var(--nav-top) + var(--nav-h) + 6px)`, so content disappears just under the nav.
 
 **`--nav-h` is measured, not hardcoded** — the nav wraps to 2 rows on phones. `SiteNav` publishes
@@ -128,6 +128,7 @@ Work & Projects content lives in two Notion databases, fetched **at build time o
 | … | (see git history for pre-redesign iterations) |
 | Jul 2026 | **Full redesign** on `redesign` branch: ported neo-brutalist Claude Design mockup — tabbed single-screen SPA, googly eyes, light/dark toggle, Fredoka/DM Sans/Inter. Old Navbar/AccentWheel/PhotoCarousel components deleted; /about now redirects to /#about. Populated with real content (Meta $59M, Aggieworks, Meaku, Valley Tech, Intel; Notion Budget Sync, Clubly, Expense Splitter). |
 | Jul 2026 | **Notion data source** on `notion-db` branch: Work & Projects content moved out of hardcoded consts into two Notion DBs, fetched at build time via `lib/notion.ts` (`@notionhq/client` v5) + `app/page.tsx` (`force-static` async Server Component, props into client `<Site>`). Fully static, manual-redeploy strategy — no ISR/runtime fetching. Loud-fail on missing env / empty DB. Verified: live content bakes into static `index.html`. |
+| Aug 2026 | **Curly top frame** (same branch): the full viewport border became a top-only line — across the top, rounded corners, ~95px drops on each side ending in inward spiral curls. Two fixed-size `FrameCurl` SVGs + stretchy `border-top` div (curls can't distort). `.site-frame`, `.site-gutter-bottom`, `--frame-bottom` removed. |
 | Aug 2026 | **Modern pass** (same branch): hero kept fully neo-brutalist per user; everything else refined — nav active = solid ink pill (no border/offset shadow), ghost theme toggle, cards on hairline borders + soft/hover elevation, blue `--accent` kickers (Space Grotesk, larger clamp()ed titles), linked project titles get ↗, contact card rebuilt (border-less red w/ red-glow shadow, "Let's connect" heading + `.contact-link` white pills), frame thinned to 1.5px/24px radius. |
 | Aug 2026 | **Scroll redesign** on `scroll-redesign` branch: killed the tabbed SPA. `/` is now one continuous scroll (Home → Work → Projects → Contact) and **About moved to its own scrolling page at `/about`** (was a redirect to `/#about`). Nav became plain anchors + `useScrollSpy`; shared chrome extracted to `components/shell.tsx`; new `components/about-view.tsx`. Fixed frame/nav over a scrolling document needs the `.site-gutter` strips + measured `--nav-h` (see "Scroll architecture"). Nav/menu font → **Space Grotesk**. Light mode moved off cream to near-white `#FAFAFB` (dark → neutral `#101215`) with soft card elevation + hairline rules, for a more professional read. Section headers are stacked kickers (small uppercase label above the title, e.g. "EXPERIENCE" / "What I do") — the inline "— 01" numbered labels were dropped as unprofessional (user-picked via options). Removed: `.panel`, `panelIn`, `.about-scroll`/`.about-section` snap, Work's "Scroll ↓" overflow hint, `.no-scrollbar`. Verified: lint clean, build static (`/` + `/about`), no h-overflow at 1440 or 390, Notion content still bakes in. **Gotcha**: Chrome's `--headless --screenshot` flag renders *scrolled* pages wrong (fixed layers get painted at the scroll offset, content goes blank) — drive it over CDP instead (`Emulation.setDeviceMetricsOverride` + `scrollIntoView` + `Page.captureScreenshot`), which also makes narrow-width captures honest. |
 | Jul 2026 | **Mobile fixes**: hero name is now fully em-based (eyes, strokes, "A" triangle scale with clamp()ed font-size) and theme-aware via `--hero-fill`/`--hero-stroke` (dark mode gets visible outlines); About sections free-scroll on ≤860px (snap off, `height:auto`, side dots hidden) so tall content isn't clipped; Home/Contact panels use `margin:auto` + `overflow:auto` so short screens can scroll; contact card padding shrinks on mobile; nav divider hidden on mobile; mobile frame hugs the edge (`inset: 44px 14px 18px`) with content inset to 32px so nothing sits on the frame lines; scrollable panels use `.no-scrollbar`. User-verified on device (dark mode, all tabs). **Gotcha**: macOS headless Chrome can't screenshot <500px windows honestly (layout renders wider than capture) — verify mobile with real devices/devtools. Also: stale `next-server` processes hold the port and 500 new CSS chunks — `pkill -f next-server` before restarting. |

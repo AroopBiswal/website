@@ -24,7 +24,6 @@
   --nav-h: 44px;
   --frame-inset-x: 24px;
   --frame-top: 44px;
-  --frame-bottom: 24px;
   --content-pad-x: 56px;
 }
 
@@ -113,9 +112,9 @@ a {
 
 /* ---- Layout shell ----
    .site-root is a normal-flow, page-height container. Three fixed layers sit
-   above it: background gutters (z 8) hide content before it reaches the frame
-   lines, the frame border (z 9) draws over them, and the nav (z 10) breaks the
-   top border the way the original design does. */
+   above it: the top background gutter (z 8) hides content before it reaches
+   the frame line, the top frame (z 9) draws over it, and the nav (z 10)
+   breaks the line the way the original design does. */
 .site-root {
   position: relative;
   min-height: 100dvh;
@@ -138,18 +137,30 @@ a {
   height: calc(var(--nav-top) + var(--nav-h) + 6px);
 }
 
-.site-gutter-bottom {
-  bottom: 0;
-  height: calc(var(--frame-bottom) + 1.5px);
-}
-
-.site-frame {
+/* Top-only frame: a line across the top whose ends round the corners, run a
+   short way down each side, and finish in a small spiral curl (the SVG
+   end-pieces in shell.tsx). No side/bottom borders. */
+.frame-top {
   position: fixed;
-  inset: var(--frame-top) var(--frame-inset-x) var(--frame-bottom);
-  border: 1.5px solid var(--line);
-  border-radius: 24px;
+  top: var(--frame-top);
+  left: var(--frame-inset-x);
+  right: var(--frame-inset-x);
+  display: flex;
+  align-items: flex-start;
+  color: var(--line);
   pointer-events: none;
   z-index: 9;
+}
+
+.frame-top svg {
+  flex: none;
+  display: block;
+}
+
+.frame-top-line {
+  flex: 1;
+  height: 0;
+  border-top: 1.5px solid currentColor;
 }
 
 .site-nav {
@@ -487,7 +498,6 @@ html[data-theme="dark"] .contact-card {
 @media (max-width: 860px) {
   :root {
     --frame-inset-x: 14px;
-    --frame-bottom: 18px;
     --content-pad-x: 32px;
   }
 

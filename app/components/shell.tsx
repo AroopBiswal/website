@@ -195,15 +195,43 @@ export function ScrollCue() {
 }
 
 /**
- * Fixed border frame + the background strips that hide scrolling content
- * before it reaches the frame lines.
+ * One end-piece of the top frame: rounded corner, a short drop down the
+ * side, ending in an inward spiral curl. Fixed-size SVG so the curl never
+ * stretches; the straight run across the top is a flexible div between the
+ * left and (mirrored) right copies.
+ */
+function FrameCurl({ mirrored = false }: { mirrored?: boolean }) {
+  return (
+    <svg
+      width="40"
+      height="107"
+      viewBox="0 0 40 107"
+      fill="none"
+      style={mirrored ? { transform: "scaleX(-1)" } : undefined}
+    >
+      <path
+        d="M 40 0.75 H 24.75 A 24 24 0 0 0 0.75 24.75 V 95 A 10 10 0 0 0 20.75 95 A 5.5 5.5 0 0 0 9.75 95"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Fixed top frame (line + curled ends) and the background strip that hides
+ * scrolling content before it reaches the line.
  */
 export function SiteChrome() {
   return (
     <>
       <div className="site-gutter site-gutter-top" />
-      <div className="site-gutter site-gutter-bottom" />
-      <div className="site-frame" />
+      <div className="frame-top" aria-hidden>
+        <FrameCurl />
+        <span className="frame-top-line" />
+        <FrameCurl mirrored />
+      </div>
     </>
   );
 }
