@@ -138,8 +138,8 @@ a {
 }
 
 /* Top-only frame: a line across the top whose ends round the corners, run a
-   short way down each side, and finish in a small spiral curl (the SVG
-   end-pieces in shell.tsx). No side/bottom borders. */
+   short way down each side, and finish with a round cap (the SVG end-pieces
+   in shell.tsx). No side/bottom borders. */
 .frame-top {
   position: fixed;
   top: var(--frame-top);
@@ -523,6 +523,12 @@ html[data-theme="dark"] .contact-card {
   }
 
   .nav-divider {
+    display: none;
+  }
+
+  /* The wrapped nav covers the whole top run on phones, so the corner drops
+     would dangle below it with nothing to connect to — show just the line. */
+  .frame-top svg {
     display: none;
   }
 
