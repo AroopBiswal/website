@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:j9": "node scripts/j9.test.ts"
   },
   "dependencies": {
     "@notionhq/client": "^5.23.2",
