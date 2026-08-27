@@ -1,8 +1,12 @@
 // The end-date rule, kept free of React so it can be tested on its own.
 //
-// The contract, in one line: from a first day of work, find the Friday that
-// closes the Nth full working week, where a week with a holiday in it is not a
-// full working week and does not count.
+// The contract, in one line: from a first day of work, find the Nth Friday you
+// actually work, where a week whose Friday is a holiday does not count and
+// pushes the whole term out by a week.
+//
+// Only the Friday decides. A holiday on Monday through Thursday is a day off
+// but does not change the end date, because the week still ends on a worked
+// Friday.
 
 import {
   addDays,
@@ -29,8 +33,11 @@ export type WeekRow = {
   counted: boolean;
   /** Which of the N working weeks this is, or null when the week did not count. */
   countedAs: number | null;
+  /** Every holiday Monday to Friday, whether or not it changed the count. */
   holidays: Holiday[];
-  /** Plain-English reason the week did not count. Empty when it did. */
+  /** The subset falling on the Friday. Non-empty is exactly why a week is skipped. */
+  fridayHolidays: Holiday[];
+  /** Plain-English note about this week. Empty when it was an ordinary full week. */
   reason: string;
 };
 
@@ -191,18 +198,18 @@ export function calculate(input: Input): Result {
       const hit = holidayMap.get(addDays(monday, d));
       if (hit) holidays.push(...hit);
     }
-    // You are only there for part of this week if your first day is after its
-    // Monday, and a part week is not one of the N working weeks.
-    const partial = effectiveStart > monday;
-    const isCounted = !partial && holidays.length === 0;
+    // The Friday is the only day that decides. A week whose Friday is a
+    // holiday did not end on a worked day, so it does not count and the term
+    // slides out by a week. Holidays earlier in the week are days off that
+    // leave the end date alone.
+    const fridayHolidays = holidayMap.get(friday) ?? [];
+    const isCounted = fridayHolidays.length === 0;
 
     let reason = "";
-    if (partial && holidays.length) {
-      reason = `You start ${weekdayName(effectiveStart)}, and this week has ${namesOf(holidays)}`;
-    } else if (partial) {
-      reason = `You start ${weekdayName(effectiveStart)}, so this is not a full week`;
+    if (fridayHolidays.length) {
+      reason = `The Friday is ${namesOf(fridayHolidays)}`;
     } else if (holidays.length) {
-      reason = `${namesOf(holidays)}`;
+      reason = `${namesOf(holidays)}, so a day off, but the week still ends on a worked Friday`;
     }
 
     if (isCounted) counted++;
@@ -213,6 +220,7 @@ export function calculate(input: Input): Result {
       counted: isCounted,
       countedAs: isCounted ? counted : null,
       holidays,
+      fridayHolidays,
       reason,
     });
 
@@ -223,10 +231,9 @@ export function calculate(input: Input): Result {
   // Fall back to the last Friday walked if the cap was somehow hit.
   let finalEnd = endDate ?? addDays(cursor, -3);
 
-  // "If the Friday is off, extend to the next Friday." Skipping the whole week
-  // already guarantees the closing Friday is a working day, so this is a guard
-  // that should never fire rather than a rule that does work. It stays because
-  // it is the rule as written, and it is free.
+  // "If the Friday is off, extend to the next Friday" is the same statement as
+  // the skip rule above, seen from the other end, so by construction this can
+  // never fire. It stays as a cheap assertion that the two agree.
   let endNote: string | null = null;
   for (let guard = 0; guard < 30 && holidayMap.has(finalEnd); guard++) {
     const name = holidayMap.get(finalEnd)![0].name;

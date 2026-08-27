@@ -87,18 +87,23 @@ A standalone page, not a tab on the SPA. Same neo-brutalist vocabulary, but it
 scrolls normally instead of using the fixed-height `.site-*` shell, so it has its
 own `.j9-*` block at the bottom of `globals.css`.
 
-**The rule.** From a first day of work, find the Friday closing the Nth full
-working week (N defaults to 16). A week containing a holiday is not a full
-working week, so it does not count and the term slides out by a week. Two
-holidays in one week still cost only that one week. A weekend or holiday start
-rolls forward to the next working day, which is where "if Monday is off, start
-Tuesday" comes from. A first week you are not there for from Monday is a part
-week and does not count either.
+**The rule.** From a first day of work, find the Nth Friday actually worked (N
+defaults to 16). **Only the Friday decides.** A week whose Friday is a holiday
+does not count, so the term slides out by a week. Holidays falling Monday
+through Thursday are days off that leave the end date alone, however many of
+them there are. A weekend or holiday start rolls forward to the next working
+day, which is where "if Monday is off, start Tuesday" comes from; note this
+moves the reported start but not the end date, since the week still ends on a
+worked Friday.
 
-Note that "if the closing Friday is off, extend to the next Friday" can never
-fire: a week whose Friday is a holiday was never counted in the first place. The
-guard is in `calculate()` anyway because it is the rule as written and it is
-free.
+"A week whose Friday is off does not count" and "if the closing Friday is off,
+move to the next Friday" are the same statement from either end, so the tail
+guard in `calculate()` can never fire. It stays as a cheap assertion that the
+two agree.
+
+This was originally built as "any holiday in the week skips the week", which is
+wrong: it made Labor Day cost a week. If it ever needs to change back, the whole
+rule is the two lines around `fridayHolidays` in `calculate()`.
 
 **Structure.** `lib/j9-holidays.ts` and `lib/j9.ts` are pure and React-free;
 `app/j9calculator/calculator.tsx` is the only client-side piece. Everything runs
@@ -127,7 +132,9 @@ native TypeScript stripping, so there is **no test framework dependency**. That
 is why `lib/j9.ts` imports `./j9-holidays.ts` with an explicit extension and
 `tsconfig.json` sets `allowImportingTsExtensions`. 60 assertions, including 800
 randomized starts checking the answer is always a Friday closing exactly N clean
-weeks.
+weeks, that no counted week ends on a holiday, and that no skipped week does
+not. Several tests exist specifically to pin the Friday-only rule: Labor Day (a
+Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 ## Behaviors
 
@@ -153,5 +160,6 @@ weeks.
 | Jul 2026 | **Full redesign** on `redesign` branch: ported neo-brutalist Claude Design mockup — tabbed single-screen SPA, googly eyes, light/dark toggle, Fredoka/DM Sans/Inter. Old Navbar/AccentWheel/PhotoCarousel components deleted; /about now redirects to /#about. Populated with real content (Meta $59M, Aggieworks, Meaku, Valley Tech, Intel; Notion Budget Sync, Clubly, Expense Splitter). |
 | Jul 2026 | **Notion data source** on `notion-db` branch: Work & Projects content moved out of hardcoded consts into two Notion DBs, fetched at build time via `lib/notion.ts` (`@notionhq/client` v5) + `app/page.tsx` (`force-static` async Server Component, props into client `<Site>`). Fully static, manual-redeploy strategy — no ISR/runtime fetching. Loud-fail on missing env / empty DB. Verified: live content bakes into static `index.html`. |
 | Aug 2026 | **`/trading` rewrite** in `next.config.ts`: `/trading/:path*` proxies to the Bull and Bear dashboard, a **separate Vercel project** built from `AroopBiswal/BullAndBear` (root dir `web`). Deliberately not merged into this repo, so a broken dashboard build can't take the site down; cost is one proxy hop. **Two gotchas**: (1) the destination keeps the `/trading` prefix, because that project sets `basePath: "/trading"` — stripping it 404s everything; (2) `DASHBOARD` is hardcoded to `bullandbear-dashboard.vercel.app`, so the Vercel project must be named that, or update the const. The dashboard proxies onward to a Mac mini over a Cloudflare Tunnel server-side, so the whole path is same-origin and the tunnel hostname never reaches a browser. Nothing else here needs to know about it. |
+| Aug 2026 | **Friday-only rule correction** for the calculator: a week is skipped only when **its Friday** is a holiday, not when the week contains any holiday. The first version made Labor Day cost a full week. Tests, UI copy, and the rules list all rewritten to match. |
 | Aug 2026 | **Janine's end date calculator** at `/j9calculator`: pure date logic in `lib/j9.ts` + `lib/j9-holidays.ts`, GUI in `app/j9calculator/`, styles in the `.j9-*` block of `globals.css`, googly eyes extracted to `app/components/googly.tsx`. Dependency-free test suite via Node's native type stripping (`npm run test:j9`). See the section above for the rule and the gotchas. **Verified**: 60 tests green, light and dark, and a real 390px viewport (measured in an iframe, since `resize_window` does not actually resize this Chrome and small-window screenshots lie, per the mobile note below). |
 | Jul 2026 | **Mobile fixes**: hero name is now fully em-based (eyes, strokes, "A" triangle scale with clamp()ed font-size) and theme-aware via `--hero-fill`/`--hero-stroke` (dark mode gets visible outlines); About sections free-scroll on ≤860px (snap off, `height:auto`, side dots hidden) so tall content isn't clipped; Home/Contact panels use `margin:auto` + `overflow:auto` so short screens can scroll; contact card padding shrinks on mobile; nav divider hidden on mobile; mobile frame hugs the edge (`inset: 44px 14px 18px`) with content inset to 32px so nothing sits on the frame lines; scrollable panels use `.no-scrollbar`. User-verified on device (dark mode, all tabs). **Gotcha**: macOS headless Chrome can't screenshot <500px windows honestly (layout renders wider than capture) — verify mobile with real devices/devtools. Also: stale `next-server` processes hold the port and 500 new CSS chunks — `pkill -f next-server` before restarting. |

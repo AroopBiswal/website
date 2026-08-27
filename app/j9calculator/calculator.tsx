@@ -158,9 +158,9 @@ export default function Calculator() {
           </span>
         </header>
         <p className="j9-sub">
-          Give it your first day of work and it finds the Friday that closes the term. A week with a
-          holiday in it is not a full working week, so it does not count and the whole term slides
-          out by a week.
+          Give it your first day of work and it finds the Friday that closes the term. Only the
+          Friday matters: a week that ends on a holiday does not count, so the whole term slides out
+          by a week. A day off earlier in the week changes nothing.
         </p>
 
         <div className="j9-grid">
@@ -253,8 +253,8 @@ export default function Calculator() {
                 </button>
               </div>
               <p className="j9-hint">
-                Shutdowns, offsites, anything else the office is closed for. A day that lands on a
-                weekend changes nothing, since it was not a working day to begin with.
+                Shutdowns, offsites, anything else the office is closed for. Only ones landing on a
+                Friday move the end date. A weekend one changes nothing at all.
               </p>
               {custom.length > 0 && (
                 <ul className="j9-daylist">
@@ -326,8 +326,8 @@ export default function Calculator() {
                     </span>
                     <span>
                       {result.skippedWeeks === 1
-                        ? "One week had a holiday in it, so the term runs a week longer than "
-                        : `${result.skippedWeeks} weeks had holidays in them, so the term runs ${result.skippedWeeks} weeks longer than `}
+                        ? "One week ended on a holiday, so the term runs a week longer than "
+                        : `${result.skippedWeeks} weeks ended on a holiday, so the term runs ${result.skippedWeeks} weeks longer than `}
                       a straight {result.countedWeeks} weeks on the calendar.
                     </span>
                   </p>
@@ -383,7 +383,7 @@ export default function Calculator() {
                       ? "Last week"
                       : w.counted
                         ? `Week ${w.countedAs}`
-                        : "Does not count"}
+                        : "Friday off"}
                   </span>
                   <span className="j9-week-reason">{w.reason}</span>
                 </li>
@@ -396,26 +396,19 @@ export default function Calculator() {
         <section className="j9-card j9-rules">
           <p className="j9-card-title">The rules it follows</p>
           <ol>
+            <li>The answer is always a Friday.</li>
             <li>
-              The answer is always a Friday, the one that closes the last full working week of the
-              term.
+              A week only counts if its Friday is a working day. If the Friday is a holiday that
+              week does not count, and the term slides out by a week. That is the same thing as
+              saying the end date moves to the next Friday.
             </li>
             <li>
-              A week with a holiday in it is not a full working week. It does not count toward the
-              total, so the term slides out by a week. Two holidays in the same week still cost only
-              that one week.
+              Holidays that fall Monday through Thursday change nothing. They are days off, but the
+              week still ends on a worked Friday, so it counts.
             </li>
             <li>
               If your first day falls on a weekend or a holiday, the clock starts on the next
               working day. A Monday holiday means a Tuesday start.
-            </li>
-            <li>
-              If the closing Friday were a day off it would move to the next Friday, though rule two
-              means that cannot happen: a week that ends on a holiday was never counted.
-            </li>
-            <li>
-              A first week you are not there for from Monday is a part week, so it does not count
-              either.
             </li>
           </ol>
         </section>

@@ -98,6 +98,7 @@ check("clean run ends on a Friday", dayOfWeek(clean.endDate), 5);
 check("clean run end date", clean.endDate, "2026-04-24");
 check("clean run counts 16 weeks", clean.weeks.filter((w) => w.counted).length, 16);
 check("clean run skips nothing", clean.skippedWeeks, 0);
+check("clean run has no Friday holidays", clean.weeks.every((w) => w.fridayHolidays.length === 0), true);
 check("default term is 16 weeks", DEFAULT_WEEKS, 16);
 
 // A weekend start rolls to Monday.
@@ -109,23 +110,31 @@ check("Saturday start lands where the Monday start did", sat.endDate, clean.endD
 // Monday off means a Tuesday start, and that week does not count.
 const mlk = calculate({ start: "2026-01-19", weeks: 4, holidaySet: "us-federal", custom: [] });
 check("MLK Monday start rolls to Tuesday", mlk.effectiveStart, "2026-01-20");
-check("the MLK week does not count", mlk.weeks[0].counted, false);
+// The start still moves, but MLK is a Monday, so the week is not skipped.
+check("the MLK week still counts", mlk.weeks[0].counted, true);
 check("MLK week names the holiday", mlk.weeks[0].holidays[0].name, "Martin Luther King Jr. Day");
-// Presidents' Day lands in the week of Feb 16, so a second week drops out too.
-check("four counted weeks land after both skips", mlk.endDate, "2026-02-27");
-check("two weeks were skipped", mlk.skippedWeeks, 2);
+check("four counted weeks end four Fridays out", mlk.endDate, "2026-02-13");
+check("no week was skipped", mlk.skippedWeeks, 0);
 
-// A holiday mid-term pushes the end out by exactly one week per holiday week.
+// Only the Friday decides. Labor Day is a Monday, so its week still counts and
+// the end date does not move at all.
+const laborDay = calculate({ start: "2026-08-31", weeks: 2, holidaySet: "us-federal", custom: [] });
+check("a Monday holiday does not skip its week", laborDay.endDate, "2026-09-11");
+check("the Labor Day week still counts", laborDay.weeks[1].counted, true);
+check("nothing is skipped for a Monday holiday", laborDay.skippedWeeks, 0);
+check("the Labor Day week still names the holiday", laborDay.weeks[1].holidays[0].name, "Labor Day");
+check("Labor Day is not a Friday holiday", laborDay.weeks[1].fridayHolidays.length, 0);
+
+// Juneteenth and the observed July 4 are both Fridays, so both skip.
 const noHol = calculate({ start: "2026-06-01", weeks: 4, ...noHolidays });
 const withHol = calculate({ start: "2026-06-01", weeks: 4, holidaySet: "us-federal", custom: [] });
 check("no-holiday June ends", noHol.endDate, "2026-06-26");
-// Juneteenth takes out the week of Jun 15, and the observed July 4 takes out
-// the week of Jun 29, so the term runs two weeks past the naive answer.
-check("two holiday weeks push the end out two weeks", withHol.endDate, "2026-07-10");
+check("two Friday holidays push the end out two weeks", withHol.endDate, "2026-07-10");
 check("two June-July weeks skipped", withHol.skippedWeeks, 2);
+check("the Juneteenth week is skipped on its Friday", withHol.weeks[2].fridayHolidays[0].name, "Juneteenth");
 
-// Two holidays in the same week only cost one week, not two.
-const oneWeekTwoHolidays = calculate({
+// Holidays that land Monday to Thursday cost nothing, however many there are.
+const midweekOnly = calculate({
   start: "2026-03-02",
   weeks: 2,
   holidaySet: "none",
@@ -134,27 +143,36 @@ const oneWeekTwoHolidays = calculate({
     { date: "2026-03-12", name: "Another company day" },
   ],
 });
-check("two holidays in one week cost one week", oneWeekTwoHolidays.endDate, "2026-03-20");
-check("that week lists both holidays", oneWeekTwoHolidays.weeks[1].holidays.length, 2);
+check("two midweek holidays do not skip the week", midweekOnly.endDate, "2026-03-13");
+check("that week still counts", midweekOnly.weeks[1].counted, true);
+check("that week still lists both holidays", midweekOnly.weeks[1].holidays.length, 2);
 
-// A partial first week does not count as a full week.
+// A Friday holiday does skip, and costs exactly one week.
+const fridayOff = calculate({
+  start: "2026-01-05",
+  weeks: 2,
+  holidaySet: "none",
+  custom: [{ date: "2026-01-16", name: "Shutdown Friday" }],
+});
+check("a Friday holiday skips its week", fridayOff.endDate, "2026-01-23");
+check("the skipped week is the one with the Friday off", fridayOff.weeks[1].counted, false);
+check("and it says why", fridayOff.weeks[1].reason.startsWith("The Friday is"), true);
+
+// A part first week counts, because the rule only ever looks at the Friday.
 const wed = calculate({ start: "2026-01-07", weeks: 16, ...noHolidays });
-check("Wednesday start does not count week one", wed.weeks[0].counted, false);
-check("Wednesday start ends a week later than a Monday start", wed.endDate, "2026-05-01");
-// Wednesday is a working day, so nothing moves the start. The part week is
-// explained on the week row instead.
+check("a Wednesday start still counts week one", wed.weeks[0].counted, true);
+check("so it lands on the same Friday as a Monday start", wed.endDate, clean.endDate);
 check("Wednesday start does not move the start", wed.startNote, null);
-check("Wednesday part week is explained", wed.weeks[0].reason.includes("not a full week"), true);
 
-// Custom days are honoured alongside a preset set.
+// A midweek custom day is honoured in the listing but changes no dates.
 const custom = calculate({
   start: "2026-01-05",
   weeks: 2,
   holidaySet: "none",
   custom: [{ date: "2026-01-14", name: "Offsite" }],
 });
-check("a custom day skips its week", custom.endDate, "2026-01-23");
-check("custom day is named in the row", custom.weeks[1].holidays[0].name, "Offsite");
+check("a midweek custom day does not move the end", custom.endDate, "2026-01-16");
+check("custom day is still named in the row", custom.weeks[1].holidays[0].name, "Offsite");
 // A custom day on a weekend cannot take a work day away.
 const weekendCustom = calculate({
   start: "2026-01-05",
@@ -178,7 +196,8 @@ for (let i = 0; i < 400; i++) {
     if (r.effectiveStart < start) invariantFailures++;
     if (r.endDate <= r.effectiveStart) invariantFailures++;
     for (const w of r.weeks) {
-      if (w.counted && w.holidays.length > 0) invariantFailures++;
+      if (w.counted && w.fridayHolidays.length > 0) invariantFailures++;
+      if (!w.counted && w.fridayHolidays.length === 0) invariantFailures++;
     }
   }
 }
