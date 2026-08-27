@@ -519,3 +519,578 @@ a {
     padding: 36px 22px;
   }
 }
+
+/* ===================================================================
+   Janine's end date calculator (/j9calculator)
+   A standalone page, so it scrolls normally instead of using the
+   fixed-height tab shell the rest of the site uses. Same neo-brutalist
+   vocabulary: thick black borders, hard offset shadows, cream ground.
+   =================================================================== */
+
+.j9-root {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 44px 24px 64px;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] .j9-root {
+  /* Makes the native date picker and its icon legible on the dark ground. */
+  color-scheme: dark;
+}
+
+.j9-frame {
+  position: fixed;
+  inset: 44px 24px 24px;
+  border: 2.5px solid var(--line);
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.j9-wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.j9-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -30px 0 34px;
+}
+
+.j9-back {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  background: var(--bg);
+  border: none;
+  padding: 6px 14px 6px 0;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.j9-back:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.j9-topbar .theme-toggle {
+  margin-left: auto;
+}
+
+/* ---- Masthead ---- */
+.j9-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.j9-title {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 700;
+  font-size: clamp(34px, 6vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -1.4px;
+  margin: 0;
+}
+
+.j9-title .j9-title-accent {
+  color: #e5372a;
+}
+
+.j9-eyes {
+  display: inline-flex;
+  gap: 6px;
+  padding-bottom: 10px;
+}
+
+.j9-sub {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 62ch;
+  margin: 0 0 30px;
+}
+
+/* ---- Cards ---- */
+.j9-card {
+  background: var(--panel);
+  /* var(--line) rather than a hardcoded black: a near-black border is
+     invisible against the dark panel. Accent-filled things below keep
+     #151310, the way the rest of the design system does. */
+  border: 3px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 5px 5px 0 var(--shadow);
+  padding: 24px 26px;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.j9-card-title {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+.j9-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ---- Form controls ---- */
+.j9-field {
+  margin-bottom: 20px;
+}
+
+.j9-field:last-child {
+  margin-bottom: 0;
+}
+
+.j9-label {
+  display: block;
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.j9-hint {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 7px 0 0;
+}
+
+.j9-input {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--bg);
+  border: 2.5px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 14px;
+  width: 100%;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.j9-input:focus {
+  outline: none;
+  border-color: #2e4bd8;
+  box-shadow: 3px 3px 0 #2e4bd8;
+}
+
+.j9-input.j9-invalid {
+  border-color: #e5372a;
+  box-shadow: 3px 3px 0 #e5372a;
+}
+
+.j9-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.j9-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.j9-seg {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  border: 2.5px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.j9-seg:hover {
+  transform: translateY(-2px);
+}
+
+.j9-seg.j9-on {
+  background: #2e4bd8;
+  color: #fff;
+  border-color: #151310;
+  box-shadow: 3px 3px 0 var(--shadow);
+}
+
+.j9-btn {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  background: #ffc93c;
+  color: #151310;
+  border: 2.5px solid #151310;
+  border-radius: 10px;
+  padding: 10px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 var(--shadow);
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
+}
+
+.j9-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 4px 5px 0 var(--shadow);
+}
+
+.j9-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.j9-btn-quiet {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+/* ---- Custom day list ---- */
+.j9-daylist {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.j9-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 8px 7px 15px;
+  background: var(--bg);
+}
+
+.j9-day-date {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.j9-day-name {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.j9-x {
+  margin-left: auto;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.j9-x:hover {
+  background: #e5372a;
+  color: #fff;
+  border-color: #151310;
+}
+
+/* ---- The answer ---- */
+.j9-answer {
+  background: #ffc93c;
+  border: 3px solid #151310;
+  border-radius: 14px;
+  box-shadow: 5px 5px 0 var(--shadow);
+  padding: 26px;
+  color: #151310;
+}
+
+.j9-answer-label {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 12px;
+  opacity: 0.72;
+  margin: 0 0 10px;
+}
+
+.j9-answer-day {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 19px;
+  margin: 0;
+}
+
+.j9-answer-date {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 700;
+  font-size: clamp(30px, 4.6vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -1.2px;
+  margin: 2px 0 0;
+}
+
+.j9-answer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.j9-answer .j9-btn {
+  background: #151310;
+  color: #fbf7ef;
+  border-color: #151310;
+  box-shadow: 3px 3px 0 rgba(21, 19, 16, 0.32);
+}
+
+.j9-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.j9-stat {
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: var(--bg);
+}
+
+.j9-stat-n {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.j9-stat-l {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.j9-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.55;
+  border: 2px dashed var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 16px;
+  color: var(--ink);
+}
+
+.j9-note-icon {
+  flex: none;
+  font-size: 15px;
+}
+
+/* ---- Week breakdown ---- */
+.j9-break {
+  margin-top: 24px;
+}
+
+.j9-break-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.j9-weeks {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.j9-week {
+  display: grid;
+  grid-template-columns: 44px 190px 132px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 11px 6px;
+  border-top: 1.5px solid var(--line);
+  font-size: 14px;
+}
+
+.j9-week:last-child {
+  border-bottom: 1.5px solid var(--line);
+}
+
+.j9-week-i {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.j9-week-span {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.j9-week-reason {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.j9-badge {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  border: 2px solid #151310;
+  border-radius: 999px;
+  padding: 4px 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.j9-badge-on {
+  background: #6fb92c;
+  color: #151310;
+}
+
+.j9-badge-off {
+  background: #f5821f;
+  color: #151310;
+}
+
+.j9-badge-end {
+  background: #e5372a;
+  color: #fff;
+}
+
+.j9-week.j9-week-final .j9-week-span {
+  text-decoration: underline;
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 4px;
+}
+
+/* ---- Rules footer ---- */
+.j9-rules {
+  margin-top: 24px;
+}
+
+.j9-rules ol {
+  /* Tailwind's preflight strips list markers, so ask for them back. */
+  list-style: decimal;
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.j9-rules li::marker {
+  font-weight: 700;
+  color: #e5372a;
+}
+
+.j9-foot {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 26px 0 0;
+  text-align: center;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .j9-root {
+    padding: 40px 14px 48px;
+  }
+
+  .j9-frame {
+    inset: 40px 10px 14px;
+  }
+
+  .j9-wrap {
+    padding: 0 18px;
+  }
+
+  .j9-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .j9-week {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "span badge"
+      "reason reason";
+    row-gap: 6px;
+  }
+
+  .j9-week-i {
+    display: none;
+  }
+
+  .j9-week-span {
+    grid-area: span;
+  }
+
+  .j9-badge {
+    grid-area: badge;
+  }
+
+  .j9-week-reason {
+    grid-area: reason;
+  }
+
+  .j9-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  .j9-frame,
+  .j9-topbar,
+  .j9-controls,
+  .j9-answer-actions {
+    display: none !important;
+  }
+
+  .j9-card,
+  .j9-answer {
+    box-shadow: none;
+  }
+}
