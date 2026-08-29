@@ -15,6 +15,15 @@ const DASHBOARD = "https://bullandbear-dashboard.vercel.app";
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
+      // The bare path needs its own rule. With `:path*` matching zero
+      // segments, "/trading" rewrites to "<dashboard>/trading/" with a
+      // trailing slash, the dashboard 308s that back to "/trading", and the
+      // two bounce off each other until the browser gives up. Matching the
+      // bare path first keeps the slash off and breaks the loop.
+      {
+        source: "/trading",
+        destination: `${DASHBOARD}/trading`,
+      },
       {
         source: "/trading/:path*",
         destination: `${DASHBOARD}/trading/:path*`,
