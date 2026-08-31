@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { Job, Project, WorkData } from "@/lib/notion";
 
 const TABS = ["home", "work", "projects", "about", "contact"] as const;
@@ -10,6 +10,7 @@ type Tab = (typeof TABS)[number];
 const LINKS = {
   email: "mailto:aroopbiswal@gmail.com",
   github: "https://github.com/AroopBiswal",
+  trading: "https://aroopbiswal.com/trading",
   linkedin: "https://linkedin.com/in/AroopBiswal/",
   resume: "/resume.pdf",
 };
@@ -59,24 +60,102 @@ function Eye({
   );
 }
 
+/**
+ * The theme lives on `html[data-theme]`, written pre-paint by the init script in
+ * layout.tsx. Reading it through useSyncExternalStore keeps the server render
+ * ("light") and the client in step without a setState-in-effect.
+ */
+function useTheme() {
+  const theme = useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener("themechange", onChange);
+      return () => window.removeEventListener("themechange", onChange);
+    },
+    () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light"),
+    () => "light",
+  );
+
+  const toggle = () => {
+    const next = theme === "light" ? "dark" : "light";
+    if (next === "dark") document.documentElement.dataset.theme = "dark";
+    else delete document.documentElement.dataset.theme;
+    try {
+      localStorage.setItem("site-theme", next);
+    } catch {}
+    window.dispatchEvent(new Event("themechange"));
+  };
+
+  return [theme, toggle] as const;
+}
+
+function NavBtn({
+  t,
+  tab,
+  go,
+  children,
+}: {
+  t: Tab;
+  tab: Tab;
+  go: (t: Tab) => void;
+  children: ReactNode;
+}) {
+  return (
+    <button className={`navbtn${tab === t ? " active" : ""}`} onClick={() => go(t)}>
+      {children}
+    </button>
+  );
+}
+
 export default function Site({ work, projects }: { work: WorkData; projects: Project[] }) {
   const [tab, setTab] = useState<Tab>("home");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, toggleTheme] = useTheme();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Sync tab with URL hash so /#work etc. deep-link into panels.
+  /** About is a panel you switch to; everything else is a scroll target. */
+  const goTo = (t: Tab, behavior: ScrollBehavior = "smooth") => {
+    setTab(t);
+    if (t !== "about") {
+      const sv = scrollRef.current;
+      const sec = sv?.querySelector<HTMLElement>(`[data-section="${t}"]`);
+      if (sv && sec) sv.scrollTo({ top: sec.offsetTop, behavior });
+    }
+  };
+
+  // Sync tab with URL hash so /#work etc. deep-link into the page.
   useEffect(() => {
     const fromHash = () => {
       const h = window.location.hash.slice(1);
-      if ((TABS as readonly string[]).includes(h)) setTab(h as Tab);
+      if ((TABS as readonly string[]).includes(h)) goTo(h as Tab, "auto");
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
   }, []);
 
+  // Scroll spy: whichever section has passed the halfway mark owns the nav.
   useEffect(() => {
-    setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
-  }, []);
+    const sv = scrollRef.current;
+    if (!sv || tab === "about") return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      let current: Tab = "home";
+      sv.querySelectorAll<HTMLElement>("[data-section]").forEach((sec) => {
+        if (sv.scrollTop >= sec.offsetTop - sv.clientHeight / 2) {
+          current = sec.dataset.section as Tab;
+        }
+      });
+      setTab((prev) => (prev === current ? prev : current));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    sv.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      sv.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [tab]);
 
   // One global listener drives every googly eye on the page.
   useEffect(() => {
@@ -110,53 +189,45 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
   }, [tab]);
 
   const go = (t: Tab) => {
-    setTab(t);
+    goTo(t);
     history.replaceState(null, "", t === "home" ? window.location.pathname : `#${t}`);
   };
 
-  const toggleTheme = () => {
-    const t = theme === "light" ? "dark" : "light";
-    setTheme(t);
-    if (t === "dark") document.documentElement.dataset.theme = "dark";
-    else delete document.documentElement.dataset.theme;
-    try {
-      localStorage.setItem("site-theme", t);
-    } catch {}
-  };
-
-  const NavBtn = ({ t, children }: { t: Tab; children: ReactNode }) => (
-    <button className={`navbtn${tab === t ? " active" : ""}`} onClick={() => go(t)}>
-      {children}
-    </button>
-  );
-
   return (
     <div className="site-root">
-      <div className="site-frame" />
+      <div className="site-rule" />
 
+      <header className="site-header">
       <nav className="site-nav">
-        <NavBtn t="home">Home</NavBtn>
-        <NavBtn t="work">Work</NavBtn>
-        <NavBtn t="projects">Projects</NavBtn>
+        <NavBtn tab={tab} go={go} t="home">Home</NavBtn>
+        <NavBtn tab={tab} go={go} t="work">Work</NavBtn>
+        <NavBtn tab={tab} go={go} t="projects">Projects</NavBtn>
         <a className="navbtn" href={LINKS.github} target="_blank" rel="noreferrer">
           GitHub
         </a>
-        <NavBtn t="contact">Contact</NavBtn>
+        <NavBtn tab={tab} go={go} t="contact">Contact</NavBtn>
       </nav>
 
       <nav className="site-nav site-nav-right">
-        <NavBtn t="about">About Me</NavBtn>
+        <a className="navbtn" href={LINKS.trading} target="_blank" rel="noreferrer">
+          Trading
+        </a>
+        <NavBtn tab={tab} go={go} t="about">About Me</NavBtn>
         <button className="theme-toggle" onClick={toggleTheme}>
           {theme === "light" ? "Dark" : "Light"}
         </button>
       </nav>
+      </header>
 
       <div className="site-content">
-        {tab === "home" && <HomePanel go={go} />}
-        {tab === "work" && <WorkPanel featured={work.featured} jobs={work.jobs} />}
-        {tab === "projects" && <ProjectsPanel projects={projects} />}
+        {/* Home, Work, Projects and Contact are one continuous scroll. */}
+        <div ref={scrollRef} className="scroll-view no-scrollbar" style={{ display: tab === "about" ? "none" : "block" }}>
+          <HomePanel go={go} />
+          <WorkPanel featured={work.featured} jobs={work.jobs} />
+          <ProjectsPanel projects={projects} />
+          <ContactPanel />
+        </div>
         {tab === "about" && <AboutPanel />}
-        {tab === "contact" && <ContactPanel />}
       </div>
     </div>
   );
@@ -174,7 +245,7 @@ function HomePanel({ go }: { go: (t: Tab) => void }) {
   });
 
   return (
-    <div className="panel no-scrollbar" style={{ overflow: "auto" }}>
+    <div data-section="home" className="section section-centered">
       {/* Floating blob friends */}
       <div className="float-deco" style={{ position: "absolute", top: "6%", left: "5%", ["--rot" as string]: "-10deg", animation: "floaty 5.5s ease-in-out infinite" }}>
         <div style={{ width: 118, height: 118, background: "#E5372A", border: "5px solid #151310", borderRadius: "50%", boxShadow: "7px 7px 0 var(--shadow)", position: "relative" }}>
@@ -254,25 +325,13 @@ function HomePanel({ go }: { go: (t: Tab) => void }) {
 /* ============ WORK ============ */
 
 function WorkPanel({ featured, jobs }: { featured: Job; jobs: Job[] }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [hint, setHint] = useState(false);
-
-  useEffect(() => {
-    const sc = scrollerRef.current;
-    if (sc) setHint(sc.scrollHeight > sc.clientHeight + 4);
-  }, []);
-
   return (
-    <div className="panel" style={{ flexDirection: "column", gap: 20 }}>
+    <div data-section="work" className="section">
       <div className="panel-head">
         <span className="panel-label">Experience — 01</span>
         <h2 className="panel-title">What I do</h2>
-        <span className="scroll-hint" style={{ opacity: hint ? 1 : 0 }}>
-          Scroll
-          <span style={{ display: "inline-block", animation: "floatyB 1.2s ease-in-out infinite" }}>↓</span>
-        </span>
       </div>
-      <div ref={scrollerRef} className="no-scrollbar" onScroll={(e) => e.currentTarget.scrollTop > 10 && setHint(false)} style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
+      <div style={{ width: "100%" }}>
         <div className="work-grid">
           <div className="card" style={{ gridColumn: "1 / -1", padding: "32px 34px", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -282,7 +341,16 @@ function WorkPanel({ featured, jobs }: { featured: Job; jobs: Job[] }) {
               </div>
               <span className="period-pill">{featured.period}</span>
             </div>
-            <p style={{ fontSize: 16, lineHeight: 1.45, margin: 0, color: "var(--muted)" }}>{featured.blurb}</p>
+            <p style={{ fontSize: 16, lineHeight: 1.45, margin: featured.highlights.length ? "0 0 18px" : 0, color: "var(--muted)" }}>
+              {featured.blurb}
+            </p>
+            {featured.highlights.length > 0 && (
+              <ul className="job-bullets">
+                {featured.highlights.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {jobs.map((job) => (
@@ -307,17 +375,20 @@ function WorkPanel({ featured, jobs }: { featured: Job; jobs: Job[] }) {
 
 function ProjectsPanel({ projects }: { projects: Project[] }) {
   return (
-    <div className="panel" style={{ flexDirection: "column", gap: 20 }}>
+    <div data-section="projects" className="section">
       <div className="panel-head">
         <span className="panel-label">Selected work — 02</span>
         <h2 className="panel-title">Things I&apos;ve made</h2>
       </div>
-      <div className="no-scrollbar" style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
+      <div style={{ width: "100%" }}>
         <div className="project-list inter">
           {projects.map((p) => {
             const inner = (
               <>
-                <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)", letterSpacing: 1 }}>{p.num}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)", letterSpacing: 1 }}>{p.num}</span>
+                  {p.date && <span className="proj-date">{p.date}</span>}
+                </div>
                 <h3 style={{ fontWeight: 600, fontSize: "clamp(22px, 3vw, 30px)", margin: 0, color: "var(--ink)", letterSpacing: "-0.8px", lineHeight: 1.1 }}>
                   {p.title}
                 </h3>
@@ -384,7 +455,7 @@ function AboutPanel() {
               </span>
               <h2 style={{ fontWeight: 700, fontSize: "clamp(32px, 5vw, 44px)", margin: 0, letterSpacing: "-0.5px" }}>About Me</h2>
               <p style={{ fontSize: 17, lineHeight: 1.6, color: "var(--muted)", margin: 0, maxWidth: 520, fontFamily: "var(--font-dm-sans)" }}>
-                Hi, I'm Aroop! In my free time I like playing basketball, going to
+                Hi, I&apos;m Aroop! In my free time I like playing basketball, going to
                 concerts, and trying new food in SF.
               </p>
               <span style={{ fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", fontSize: 12, color: "var(--muted)" }}>
@@ -485,7 +556,7 @@ function ContactPanel() {
   });
 
   return (
-    <div className="panel no-scrollbar" style={{ overflow: "auto" }}>
+    <div data-section="contact" className="section section-centered">
       <div className="contact-card">
         <span className="float-deco" style={{ position: "absolute", top: 22, left: 30, width: 40, height: 40, background: "#FFC93C", border: "4px solid #151310", borderRadius: "50%", animation: "floaty 5s ease-in-out infinite" }} />
         <div style={{ display: "flex", gap: 20, justifyContent: "center", marginBottom: 18 }}>

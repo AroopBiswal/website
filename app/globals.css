@@ -95,13 +95,19 @@ a {
   color: var(--ink);
 }
 
-.site-frame {
+/* One horizontal rule across the top; the nav breaks it on the left. */
+.site-rule {
   position: absolute;
-  inset: 44px 24px 24px;
-  border: 2.5px solid var(--line);
-  border-radius: 16px;
+  top: 44px;
+  left: 0;
+  right: 0;
+  border-top: 2.5px solid var(--line);
   pointer-events: none;
-  z-index: 1;
+  z-index: 3;
+}
+
+.site-header {
+  display: contents;
 }
 
 .site-nav {
@@ -119,13 +125,38 @@ a {
 
 .site-content {
   position: absolute;
-  top: 110px;
+  top: 91px;
   left: 56px;
   right: 56px;
-  bottom: 52px;
-  z-index: 5;
+  bottom: 28px;
+  z-index: 1;
 }
 
+/* Home / Work / Projects / Contact live here and scroll as one page. */
+.scroll-view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.section {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 48px 0 24px;
+}
+
+/* Home and Contact centre their single block instead of stacking. */
+.section-centered {
+  align-items: center;
+  justify-content: center;
+}
+
+/* About stays a swapped panel, outside the scroll flow. */
 .panel {
   position: absolute;
   inset: 0;
@@ -240,12 +271,13 @@ a {
   transform: translateY(-3px) rotate(var(--tilt, -2deg));
 }
 
-/* ---- Panel headers ---- */
+/* ---- Section headers ---- */
 .panel-head {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
+  gap: 8px;
+  text-align: center;
 }
 
 .panel-label {
@@ -261,24 +293,8 @@ a {
   font-family: var(--font-inter), sans-serif;
   font-weight: 600;
   font-size: 36px;
-  margin: 0 0 0 8px;
+  margin: 0;
   letter-spacing: -0.8px;
-}
-
-.scroll-hint {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-inter), sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  color: var(--muted);
-  border: 1.5px solid var(--line);
-  border-radius: 999px;
-  padding: 7px 14px;
-  transition: opacity 0.35s ease;
 }
 
 /* ---- Work ---- */
@@ -309,6 +325,41 @@ a {
 
 .work-card:hover {
   transform: translateY(-3px);
+}
+
+/* Bullets under the featured job — small dots in the text colour. */
+.job-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.job-bullets li {
+  display: flex;
+  gap: 11px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.job-bullets li::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  margin-top: 7px;
+  opacity: 0.8;
+}
+
+.proj-date {
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.75;
+  white-space: nowrap;
 }
 
 .period-pill {
@@ -425,18 +476,34 @@ a {
 
 /* ---- Responsive ---- */
 @media (max-width: 860px) {
-  .site-nav {
-    left: 12px;
-    right: auto;
-    padding: 4px 8px;
-    /* Wrap before running into the right-hand group. */
-    max-width: calc(100% - 190px);
+  /* The nav is taller than 44px once it wraps, so the free-standing rule would
+     cut through it. Draw the line as the header's own bottom border instead. */
+  .site-rule {
+    display: none;
   }
 
+  .site-header {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border-bottom: 2.5px solid var(--line);
+  }
+
+  .site-nav,
   .site-nav-right {
-    left: auto;
-    right: 12px;
-    padding: 4px 8px;
+    position: static;
+    max-width: none;
+    padding: 0;
+    background: transparent;
   }
 
   .navbtn {
@@ -454,17 +521,15 @@ a {
     margin-left: 4px;
   }
 
-  /* Pull the frame closer to the screen edge and inset the content past the
-     border, so text/cards never sit on the frame lines. */
-  .site-frame {
-    inset: 44px 14px 18px;
+  .site-content {
+    top: 104px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
   }
 
-  .site-content {
-    top: 168px;
-    left: 32px;
-    right: 32px;
-    bottom: 34px;
+  .section {
+    padding: 24px 0 16px;
   }
 
   .panel-title {

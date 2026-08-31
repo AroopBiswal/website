@@ -16,17 +16,26 @@ Run dev server: `npm run dev`
 
 ---
 
-## Design (redesign branch, July 2026)
+## Design (scroll redesign, Aug 2026)
 
-Playful **neo-brutalist** single-screen site, ported from a Claude Design mockup at
-`/Users/aroop/Documents/Programming/Designs/PersonalWebsiteRedesign/Aroop Site.dc.html` (source of truth for the look).
+Playful **neo-brutalist** site, ported from the Claude Design artboard
+**`Aroop Site.dc.html`** in `~/Code/Designs/Website frontend redesign.zip` (source of truth for
+the look).
+
+> **Pick the right artboard.** That zip holds four, and three of them are *not* the target:
+> `Aroop Site (tabbed version)` (rounded frame, tab-swapped panels — the previous design),
+> `Aroop Site (scroll version)` (sticky nav with a serif wordmark, a blue featured job card,
+> long page scroll) and `Aroop Hero Options` (hero explorations). The live design is the
+> plain **`Aroop Site.dc.html`**: one full-width rule at the top, nav breaking it on the left,
+> and **white** cards throughout — there is no blue Google card.
 
 Key traits:
-- Cream background (`#FBF7EF`) with a rounded 2.5px border frame inset around the viewport; the nav "breaks" the top border
+- Cream background (`#FBF7EF`) with **one horizontal 2.5px rule across the top**; the nav sits on it and "breaks" it on the left
 - Thick black borders + hard offset shadows (`5px 5px 0`) on buttons/stickers
 - **Googly eyes that follow the cursor** everywhere — including as the "oo" in "Aroop" in the hero
 - Floating blob characters with eyes on the home panel
-- **Tab-based SPA**: no page scrolling between sections; nav switches panels (Home, Work, Projects, About, Contact) with a `panelIn` animation
+- **One scroll, one panel**: Home / Work / Projects / Contact are stacked full-height sections inside a single `.scroll-view`; the nav scrolls to them and a scroll-spy lights the matching pill. **About Me is different** — it stays a swapped panel (hidden `.scroll-view`, `panelIn` animation) with its own 3-section track and side dots, which is why the nav separates it with a divider.
+- Section headers are **centred** (label above title); there is no "Scroll ↓" hint
 - Light/Dark theme toggle (button in nav), applied as `html[data-theme="dark"]`. Priority (init script in `layout.tsx`, runs pre-paint to prevent flash): explicit toggle choice in `localStorage("site-theme")` → system `prefers-color-scheme` → **dark** as final fallback. Hero name keeps white fill + black stroke in both themes (`--hero-fill`/`--hero-stroke` only set in `:root`).
 
 ### Tokens (CSS vars in `globals.css`)
@@ -42,7 +51,12 @@ Key traits:
 Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A`, blue `#2E4BD8`, yellow `#FFC93C`, green `#6FB92C`, orange `#F5821F`; interest chips use `#F59E0B` `#3B82F6` `#10B981` `#F43F5E` `#F97316`.
 
 ### Key CSS classes (`globals.css`)
-`.site-root` / `.site-frame` / `.site-nav` / `.site-content` (shell) · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` · `.project-row` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
+`.site-root` / `.site-rule` / `.site-header` / `.site-nav`(+`.site-nav-right`) / `.site-content` / `.scroll-view` / `.section`(+`.section-centered`) (shell) · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` / `.job-bullets` · `.project-row` / `.proj-date` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
+
+`.site-header` is a `display: contents` wrapper on desktop, so the two nav groups keep their
+absolute placement over the rule. Below 860px it becomes a real flex container: the free-standing
+`.site-rule` is hidden and the line is drawn as the header's own `border-bottom`, because a
+wrapped two-row nav would otherwise sit on top of a rule fixed at 44px.
 
 ---
 
@@ -55,7 +69,7 @@ app/
   globals.css          # Tokens, keyframes, all design-system classes, responsive rules
   about/page.tsx       # Redirects to /#about (old route kept alive)
   components/
-    site.tsx           # THE site — client component: nav, theme, tabs, all 5 panels, eye tracking
+    site.tsx           # THE site — client component: nav, theme, scroll sections + About panel, eye tracking
     googly.tsx         # <Eye> + useEyeTracking(), extracted so other pages get the eyes
   j9calculator/
     page.tsx           # /j9calculator route shell (force-static, metadata)
@@ -70,7 +84,7 @@ public/photos/         # Carousel photos (photo1-3.jpg)
 public/resume.pdf
 ```
 
-`site.tsx` internals: **Work and Projects content comes from Notion at build time** (see below) — passed into `<Site work={...} projects={...} />` as props. The still-hardcoded consts are `INTERESTS`, `PHOTOS`, `GLANCE`, `LINKS` — edit those to change content. Panels are local components (`HomePanel`, `WorkPanel`, `ProjectsPanel`, `AboutPanel`, `ContactPanel`); `WorkPanel`/`ProjectsPanel` now take data as props. Only the active panel is mounted (so `panelIn` runs on switch).
+`site.tsx` internals: **Work and Projects content comes from Notion at build time** (see below) — passed into `<Site work={...} projects={...} />` as props. The still-hardcoded consts are `INTERESTS`, `PHOTOS`, `GLANCE`, `LINKS` — edit those to change content. Sections are local components (`HomePanel`, `WorkPanel`, `ProjectsPanel`, `ContactPanel` — all mounted together inside `.scroll-view` — plus `AboutPanel`, mounted only when its tab is active). `goTo()` scrolls the view (or opens About); a rAF-throttled scroll listener drives the scroll-spy. `NavBtn` and `useTheme()` are module-level, not created during render.
 
 ## Data source (Notion, build-time)
 
@@ -78,7 +92,8 @@ Work & Projects content lives in two Notion databases, fetched **at build time o
 - `lib/notion.ts` — `getWork()` → `{ featured, jobs }` (lowest `Order` = featured card), `getProjects()` → `Project[]` (`num` derived from `Order`). Uses `@notionhq/client` v5 (data-source API: resolves DB ID → data source via `databases.retrieve`, then `dataSources.query`). Throws a build-breaking error if env vars missing or a DB returns 0 rows (never ships an empty page).
 - `app/page.tsx` — async Server Component, `export const dynamic = "force-static"`, fetches both in parallel, passes as props.
 - **Env** (`.env.local`, git-ignored; also set in Vercel → Env Variables): `NOTION_TOKEN`, `NOTION_WORK_DB_ID` (`3a0e7c7c7bb480dc86a8da469436dfab`), `NOTION_PROJECTS_DB_ID` (`192d1b1ef9974e7496639f3efc7b4c4d`). Integration must be shared with **both** DBs.
-- **Work DB** props: `Company` (title), `Role`, `Period`, `Blurb` (rich text), `Order` (number). **Projects DB** props: `Title` (title), `Description` (rich text), `Tags` (multi-select), `Link` (url), `Date` (date — unused by site yet), `Order` (number).
+- **Work DB** props: `Company` (title), `Role`, `Period`, `Blurb` (rich text), `Order` (number), **`Highlights` (rich text — one bullet per line, rendered under the featured card only)**. **Projects DB** props: `Title` (title), `Description` (rich text), `Tags` (multi-select), `Link` (url), `Date` (date — now shown under the project number), `Order` (number).
+- `Highlights` is read by `readLines()` (splits on newlines, strips a leading `-`/`•`/`*`) and `Date` by `readMonthYear()` (hand-rolled "Jun 2026", never `Intl`). **Both degrade quietly**: a missing property yields `[]` / `null` and the row just omits them, so the build never breaks on a database that has not grown the column yet.
 - **See an edit**: `npm run build` re-fetches; a refresh alone won't (baked). `npm run dev` re-runs per request, so dev + browser refresh works for quick iteration.
 
 ## Janine's end date calculator (`/j9calculator`)
@@ -138,16 +153,18 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 ## Behaviors
 
-- **Tabs ↔ URL hash**: `/#work`, `/#about`, etc. deep-link; `go()` uses `history.replaceState`
+- **Nav ↔ URL hash**: `/#work`, `/#about`, etc. deep-link (an instant jump on load, smooth thereafter); `go()` uses `history.replaceState`
+- **Scroll spy**: whichever `[data-section]` has passed the halfway mark owns the active nav pill
 - **Eyes**: one global `mousemove` listener + rAF updates every `.pupil` via DOM (re-bound on tab change)
 - **About panel**: 3 full-height sections with CSS scroll-snap (intro/interests, photo carousel, at-a-glance) + side dots; photo carousel is translateX-based with real photos
-- **Work/Projects**: internal scrollers; Work shows a "Scroll ↓" hint only when content overflows, hidden after scrolling
-- **Responsive**: media query at 860px — nav shrinks/wraps, content top offset grows, grids collapse to 1 column, decorative blobs hidden
+- **Work/Projects**: no internal scrollers any more — the sections are full-height blocks in the page scroll
+- **Responsive**: media query at 860px — the header becomes a bordered flex band with a wrapped two-row nav, content top offset drops to 104px, grids collapse to 1 column, decorative blobs hidden
 
 ## Content notes
 
 - Hero + featured Work card say **Google (SWE, Google Cloud, 2026—Now)** — came from the newer design mockup, not the old site (which said Meta). Google card has only a one-line blurb; add real bullets when available.
 - Contact links: aroopbiswal@gmail.com, github.com/AroopBiswal, linkedin.com/in/AroopBiswal, /resume.pdf
+- Nav has two external links, both `target="_blank"`: **GitHub** (github.com/AroopBiswal) in the left group, and **Trading** (`https://aroopbiswal.com/trading` — the absolute URL, not the `/trading` rewrite path) sitting just left of About Me in the right group.
 
 ---
 
@@ -155,6 +172,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Aug 2026 | **Scroll redesign**: ported `Aroop Site.dc.html` from `~/Code/Designs/Website frontend redesign.zip`. Frame → one top rule; Home/Work/Projects/Contact became stacked sections in a single scroll view with a scroll-spy nav, while About stayed a swapped panel; section headers centred and the "Scroll ↓" hint dropped. `Job` gained `highlights` (new `Highlights` rich-text prop → bullets on the featured card) and `Project` gained `date` (the `Date` prop that already existed and was unused). Also cleared the file's standing lint errors: `NavBtn` hoisted out of render, theme read via `useSyncExternalStore` instead of setState-in-effect (7 errors → 0). **Verified**: tsc + eslint clean, and rendered against the artboard at desktop, dark mode and a real 390px viewport. **Not verified locally**: `npm run build`, which needs the Notion env vars this checkout does not have. **Wrong turn worth remembering**: the first port used `Aroop Site (scroll version).dc.html` — sticky serif-wordmark nav, blue featured card — and had to be reverted. Check the artboard name before porting. |
 | Initial | Dark charcoal multi-page site (hero, experience, projects, contact + /about page) |
 | … | (see git history for pre-redesign iterations) |
 | Jul 2026 | **Full redesign** on `redesign` branch: ported neo-brutalist Claude Design mockup — tabbed single-screen SPA, googly eyes, light/dark toggle, Fredoka/DM Sans/Inter. Old Navbar/AccentWheel/PhotoCarousel components deleted; /about now redirects to /#about. Populated with real content (Meta $59M, Aggieworks, Meaku, Valley Tech, Intel; Notion Budget Sync, Clubly, Expense Splitter). |

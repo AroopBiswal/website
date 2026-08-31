@@ -18,6 +18,8 @@ export type Job = {
   role: string;
   period: string;
   blurb: string;
+  /** One line per bullet, from the Highlights rich-text property. May be empty. */
+  highlights: string[];
 };
 
 export type WorkData = {
@@ -33,6 +35,8 @@ export type Project = {
   desc: string;
   tags: string[];
   href: string | null;
+  /** "Jun 2026", from the Date property. Null when the row has no date. */
+  date: string | null;
 };
 
 /* ---------- Env + client ---------- */
@@ -79,6 +83,8 @@ async function resolveDataSourceId(databaseId: string): Promise<string> {
 
 /* ---------- Property readers (tolerant of Notion's union types) ---------- */
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function readTitle(prop: any): string {
   return (prop?.title ?? []).map((t: any) => t.plain_text).join("").trim();
@@ -95,6 +101,24 @@ function readMultiSelect(prop: any): string[] {
 function readUrl(prop: any): string | null {
   const url = prop?.url;
   return typeof url === "string" && url.length > 0 ? url : null;
+}
+/** Rich text where each line is one bullet. Missing property → no bullets. */
+function readLines(prop: any): string[] {
+  return readText(prop)
+    .split("\n")
+    .map((line: string) => line.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean);
+}
+/**
+ * A Notion date as "Jun 2026". Formatted by hand rather than with `Intl` so the
+ * build-time HTML and the browser can never disagree (see CLAUDE.md).
+ */
+function readMonthYear(prop: any): string | null {
+  const start = prop?.date?.start;
+  if (typeof start !== "string") return null;
+  const [y, m] = start.split("-");
+  const month = MONTHS[Number(m) - 1];
+  return month && y ? `${month} ${y}` : null;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -122,6 +146,7 @@ export async function getWork(): Promise<WorkData> {
       role: readText(p.Role),
       period: readText(p.Period),
       blurb: readText(p.Blurb),
+      highlights: readLines(p.Highlights),
     };
   });
 
@@ -148,6 +173,7 @@ export async function getProjects(): Promise<Project[]> {
       desc: readText(p.Description),
       tags: readMultiSelect(p.Tags),
       href: readUrl(p.Link),
+      date: readMonthYear(p.Date),
     };
   });
 
