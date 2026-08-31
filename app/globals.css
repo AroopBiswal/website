@@ -164,13 +164,9 @@ a {
   box-shadow: 3px 3px 0 var(--shadow);
 }
 
-.nav-divider {
-  width: 2px;
-  height: 22px;
-  background: var(--line);
-  opacity: 0.35;
-  margin: 0 8px;
-  border-radius: 2px;
+.site-nav-right {
+  left: auto;
+  right: 40px;
 }
 
 .theme-toggle {
@@ -182,7 +178,7 @@ a {
   border: 3px solid var(--line);
   border-radius: 999px;
   padding: 7px 16px;
-  margin-left: 10px;
+  margin-left: 6px;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--shadow);
 }
@@ -431,6 +427,14 @@ a {
 @media (max-width: 860px) {
   .site-nav {
     left: 12px;
+    right: auto;
+    padding: 4px 8px;
+    /* Wrap before running into the right-hand group. */
+    max-width: calc(100% - 190px);
+  }
+
+  .site-nav-right {
+    left: auto;
     right: 12px;
     padding: 4px 8px;
   }
@@ -448,10 +452,6 @@ a {
     font-size: 12px;
     padding: 5px 12px;
     margin-left: 4px;
-  }
-
-  .nav-divider {
-    display: none;
   }
 
   /* Pull the frame closer to the screen edge and inset the content past the

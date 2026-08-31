@@ -142,7 +142,9 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
           GitHub
         </a>
         <NavBtn t="contact">Contact</NavBtn>
-        <span className="nav-divider" />
+      </nav>
+
+      <nav className="site-nav site-nav-right">
         <NavBtn t="about">About Me</NavBtn>
         <button className="theme-toggle" onClick={toggleTheme}>
           {theme === "light" ? "Dark" : "Light"}
