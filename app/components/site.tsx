@@ -202,9 +202,6 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
         <NavBtn tab={tab} go={go} t="home">Home</NavBtn>
         <NavBtn tab={tab} go={go} t="work">Work</NavBtn>
         <NavBtn tab={tab} go={go} t="projects">Projects</NavBtn>
-        <a className="navbtn" href={LINKS.github} target="_blank" rel="noreferrer">
-          GitHub
-        </a>
         <NavBtn tab={tab} go={go} t="contact">Contact</NavBtn>
       </nav>
 
