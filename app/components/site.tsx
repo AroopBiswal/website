@@ -447,9 +447,6 @@ function AboutPanel() {
               <div style={{ position: "absolute", top: 150, left: "50%", transform: "translateX(-50%)", width: 34, height: 26, background: "#F97316", border: "4px solid #151310", borderRadius: "50%" }} />
             </div>
             <div className="inter" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <span style={{ alignSelf: "flex-start", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", fontSize: 13, color: "#151310", background: "#F59E0B", border: "3px solid #151310", borderRadius: 999, padding: "7px 16px" }}>
-                The personal bit
-              </span>
               <h2 style={{ fontWeight: 700, fontSize: "clamp(32px, 5vw, 44px)", margin: 0, letterSpacing: "-0.5px" }}>About Me</h2>
               <p style={{ fontSize: 17, lineHeight: 1.6, color: "var(--muted)", margin: 0, maxWidth: 520, fontFamily: "var(--font-dm-sans)" }}>
                 Hi, I&apos;m Aroop! In my free time I like playing basketball, going to
