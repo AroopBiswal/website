@@ -71,6 +71,12 @@ app/
   components/
     site.tsx           # THE site — client component: nav, theme, scroll sections + About panel, eye tracking
     googly.tsx         # <Eye> + useEyeTracking(), extracted so other pages get the eyes
+    theme.ts           # useTheme() — reads html[data-theme], shared by the site and the blog
+  blog/
+    page.tsx           # Index: post list from Notion
+    [slug]/page.tsx    # One post, body rendered from Notion blocks
+    shell.tsx          # Sticky bar (back link + theme toggle) + content column
+    blocks.tsx         # Notion blocks -> JSX
   j9calculator/
     page.tsx           # /j9calculator route shell (force-static, metadata)
     calculator.tsx     # The calculator UI — client component
@@ -91,10 +97,39 @@ public/resume.pdf
 Work & Projects content lives in two Notion databases, fetched **at build time only** — static HTML, no ISR/runtime fetching (deploy = manual redeploy to pick up edits).
 - `lib/notion.ts` — `getWork()` → `{ featured, jobs }` (lowest `Order` = featured card), `getProjects()` → `Project[]` (`num` derived from `Order`). Uses `@notionhq/client` v5 (data-source API: resolves DB ID → data source via `databases.retrieve`, then `dataSources.query`). Throws a build-breaking error if env vars missing or a DB returns 0 rows (never ships an empty page).
 - `app/page.tsx` — async Server Component, `export const dynamic = "force-static"`, fetches both in parallel, passes as props.
-- **Env** (`.env.local`, git-ignored; also set in Vercel → Env Variables): `NOTION_TOKEN`, `NOTION_WORK_DB_ID` (`3a0e7c7c7bb480dc86a8da469436dfab`), `NOTION_PROJECTS_DB_ID` (`192d1b1ef9974e7496639f3efc7b4c4d`). Integration must be shared with **both** DBs.
+- **Env** (`.env.local`, git-ignored; also set in Vercel → Env Variables): `NOTION_TOKEN`, `NOTION_WORK_DB_ID` (`3a0e7c7c7bb480dc86a8da469436dfab`), `NOTION_PROJECTS_DB_ID` (`192d1b1ef9974e7496639f3efc7b4c4d`), `NOTION_BLOG_DB_ID` (`887b64c1aada49ee842921fc65b42ed2`). The integration must be shared with **all three** DBs — a database created through the Notion MCP connector is *not* automatically shared with the site's integration, and the build 404s until it is.
 - **Work DB** props: `Company` (title), `Role`, `Period`, `Blurb` (rich text), `Order` (number), **`Highlights` (rich text — one bullet per line, rendered under the featured card only)**. **Projects DB** props: `Title` (title), `Description` (rich text), `Tags` (multi-select), `Link` (url), `Date` (date — now shown under the project number), `Order` (number).
 - `Highlights` is read by `readLines()` (splits on newlines, strips a leading `-`/`•`/`*`) and `Date` by `readMonthYear()` (hand-rolled "Jun 2026", never `Intl`). **Both degrade quietly**: a missing property yields `[]` / `null` and the row just omits them, so the build never breaks on a database that has not grown the column yet.
 - **See an edit**: `npm run build` re-fetches; a refresh alone won't (baked). `npm run dev` re-runs per request, so dev + browser refresh works for quick iteration.
+
+## Blog (`/blog`)
+
+Its own route rather than a section of the scroll, so posts get real URLs.
+`app/blog/page.tsx` is the index, `app/blog/[slug]/page.tsx` a post, and both wrap
+`app/blog/shell.tsx` (client — sticky bar with the back link and the theme toggle).
+`app/blog/blocks.tsx` turns the flattened Notion blocks into JSX. `useTheme()` moved
+to `app/components/theme.ts` so the blog and the main site share one implementation.
+
+- **Content lives in a third Notion database, `Blog`** (`NOTION_BLOG_DB_ID`,
+  `887b64c1aada49ee842921fc65b42ed2`), next to Work and Projects under
+  Career / Tech / Projects / Personal Website. Props: `Title` (title), `Slug`, `Summary`
+  (rich text), `Date` (date), `Tags` (multi-select), `Published` (checkbox — unchecked
+  rows are drafts and never ship). A blank `Slug` falls back to a slug made from the title.
+- **The page body is the post.** `getPostBlocks()` walks `blocks.children.list`
+  (paginated, recursing two levels for nested lists) and flattens it to the `Block`
+  union: heading 1–3, paragraph, quote, code, divider, and list (consecutive items are
+  grouped into one `<ul>`/`<ol>`). Inline bold/italic/strikethrough/code/links survive as
+  `RichText` runs. **Anything else is silently dropped.**
+- **Images are deliberately not rendered.** Notion's file URLs are signed and expire about
+  an hour after they are issued; this site bakes HTML at build time, so a baked URL is a
+  broken image shortly after deploy. Supporting them means downloading the files at build.
+- **Reading time** is computed from the body at 200 wpm, so nothing to maintain by hand.
+- **This one does not loud-fail.** Unlike `getWork`/`getProjects`, a missing
+  `NOTION_BLOG_DB_ID` logs a warning and returns `[]`, because a blog legitimately starts
+  empty and the branch had to build before the variable existed.
+- Two module-level caches (`postsPromise`, `blocksPromises`) hold the query and each body
+  for the life of a build — the index, `generateStaticParams`, every `generateMetadata`
+  and every post page all read the same rows.
 
 ## Janine's end date calculator (`/j9calculator`)
 
@@ -172,6 +207,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **Blog** on `feature/blog`: nav button between Trading and About Me, `/blog` index and `/blog/[slug]` post pages, content from a new `Blog` Notion database with the page body rendered from Notion blocks. Index styled from a reference the user supplied — centred masthead, rules between rows, date left and computed reading time right. `useTheme()` extracted to `app/components/theme.ts`. See the Blog section above for the schema, what renders, and why images are excluded. |
 | Aug 2026 | **Scroll redesign**: ported `Aroop Site.dc.html` from `~/Code/Designs/Website frontend redesign.zip`. Frame → one top rule; Home/Work/Projects/Contact became stacked sections in a single scroll view with a scroll-spy nav, while About stayed a swapped panel; section headers centred and the "Scroll ↓" hint dropped. `Job` gained `highlights` (new `Highlights` rich-text prop → bullets on the featured card) and `Project` gained `date` (the `Date` prop that already existed and was unused). Also cleared the file's standing lint errors: `NavBtn` hoisted out of render, theme read via `useSyncExternalStore` instead of setState-in-effect (7 errors → 0). **Verified**: tsc + eslint clean, and rendered against the artboard at desktop, dark mode and a real 390px viewport. **Not verified locally**: `npm run build`, which needs the Notion env vars this checkout does not have. **Wrong turn worth remembering**: the first port used `Aroop Site (scroll version).dc.html` — sticky serif-wordmark nav, blue featured card — and had to be reverted. Check the artboard name before porting. |
 | Initial | Dark charcoal multi-page site (hero, experience, projects, contact + /about page) |
 | … | (see git history for pre-redesign iterations) |

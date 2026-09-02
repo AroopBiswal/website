@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { CSSProperties, ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
 import type { Job, Project, WorkData } from "@/lib/notion";
+import { useTheme } from "./theme";
 
 const TABS = ["home", "work", "projects", "about", "contact"] as const;
 type Tab = (typeof TABS)[number];
@@ -58,34 +60,6 @@ function Eye({
       <span className="pupil" style={{ width: pupil, height: pupil }} />
     </span>
   );
-}
-
-/**
- * The theme lives on `html[data-theme]`, written pre-paint by the init script in
- * layout.tsx. Reading it through useSyncExternalStore keeps the server render
- * ("light") and the client in step without a setState-in-effect.
- */
-function useTheme() {
-  const theme = useSyncExternalStore(
-    (onChange) => {
-      window.addEventListener("themechange", onChange);
-      return () => window.removeEventListener("themechange", onChange);
-    },
-    () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light"),
-    () => "light",
-  );
-
-  const toggle = () => {
-    const next = theme === "light" ? "dark" : "light";
-    if (next === "dark") document.documentElement.dataset.theme = "dark";
-    else delete document.documentElement.dataset.theme;
-    try {
-      localStorage.setItem("site-theme", next);
-    } catch {}
-    window.dispatchEvent(new Event("themechange"));
-  };
-
-  return [theme, toggle] as const;
 }
 
 function NavBtn({
@@ -212,6 +186,9 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
         <a className="navbtn" href={LINKS.trading} target="_blank" rel="noreferrer">
           Trading
         </a>
+        <Link className="navbtn" href="/blog">
+          Blog
+        </Link>
         <NavBtn tab={tab} go={go} t="about">About Me</NavBtn>
         <button className="theme-toggle" onClick={toggleTheme}>
           {theme === "light" ? "Dark" : "Light"}
