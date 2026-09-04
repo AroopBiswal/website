@@ -59,7 +59,7 @@ export function SiteNav({
         {/* Opens a new tab, so the hover shows an outward arrow with it. */}
         <a className="navbtn navbtn-ext" href={LINKS.trading} target="_blank" rel="noreferrer">
           Trading
-          <svg className="navbtn-ext-arrow" viewBox="0 0 12 12" aria-hidden focusable="false">
+          <svg className="navbtn-ext-arrow" viewBox="0 0 12 12" width="9" height="9" aria-hidden focusable="false">
             <path d="M3 9 9 3M4.5 3H9v4.5" />
           </svg>
           <span className="sr-only"> (opens in a new tab)</span>

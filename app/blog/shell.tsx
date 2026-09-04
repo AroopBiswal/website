@@ -29,7 +29,7 @@ export default function BlogShell({ children }: { children: ReactNode }) {
           is outside the sticky bar on purpose: it belongs to the page, so it
           scrolls away with it. */}
       <Link href="/" className="blog-back" aria-label="Back to home">
-        <svg viewBox="0 0 56 24" aria-hidden focusable="false">
+        <svg viewBox="0 0 56 24" width="56" height="24" aria-hidden focusable="false">
           <path d="M54 12H2M12 2 2 12l10 10" />
         </svg>
       </Link>
