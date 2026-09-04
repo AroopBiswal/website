@@ -85,6 +85,30 @@ a {
   }
 }
 
+/* Navigating between the home page and the blog swaps one header for another.
+   These run on mount so the swap reads as a move rather than a jump-cut. */
+@keyframes barIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ---- Layout shell ---- */
 .site-root {
   position: relative;
@@ -108,6 +132,15 @@ a {
 
 .site-header {
   display: contents;
+}
+
+.site-root .site-nav,
+.site-root .site-rule {
+  animation: barIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-root .site-content {
+  animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
 }
 
 .site-nav {
@@ -587,6 +620,20 @@ a {
   }
 }
 
+/* Anyone who asks for less motion gets the layout without the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .site-root .site-nav,
+  .site-root .site-rule,
+  .site-root .site-content,
+  .blog-bar,
+  .blog-wrap,
+  .hero-deco,
+  .contact-deco,
+  .float-deco {
+    animation: none;
+  }
+}
+
 /* ===================================================================
    Blog (/blog)
    Its own route rather than a section of the scroll, so posts can have
@@ -607,6 +654,7 @@ a {
    free-standing line the home page's nav breaks. The two nav groups drop out
    of absolute positioning and lay out in this flex row instead. */
 .blog-bar {
+  animation: barIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -661,6 +709,7 @@ a {
 }
 
 .blog-wrap {
+  animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
   max-width: 780px;
   margin: 0 auto;
   padding: 64px 40px 96px;
