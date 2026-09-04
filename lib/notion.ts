@@ -39,6 +39,45 @@ export type Project = {
   date: string | null;
 };
 
+/** One post's front matter. The body is fetched separately, per post. */
+export type PostMeta = {
+  /** Notion page id — used to fetch the body blocks. */
+  id: string;
+  /** URL path segment: /blog/<slug>. */
+  slug: string;
+  title: string;
+  summary: string;
+  /** "Jun 2026", for display. Null when the row has no date. */
+  date: string | null;
+  /** Raw ISO date, for sorting and <time dateTime>. */
+  dateISO: string | null;
+  tags: string[];
+  /** Whole minutes at 200 wpm, counted from the body. 0 when the post is empty. */
+  readingMinutes: number;
+};
+
+/** A run of text with Notion's inline formatting flags. */
+export type RichText = {
+  text: string;
+  bold: boolean;
+  italic: boolean;
+  code: boolean;
+  strikethrough: boolean;
+  href: string | null;
+};
+
+/**
+ * The subset of Notion blocks the blog renders. Anything else is dropped —
+ * see `readBlocks` for what that means in practice.
+ */
+export type Block =
+  | { kind: "heading"; level: 1 | 2 | 3; text: RichText[] }
+  | { kind: "paragraph"; text: RichText[] }
+  | { kind: "quote"; text: RichText[] }
+  | { kind: "code"; language: string; text: string }
+  | { kind: "divider" }
+  | { kind: "list"; ordered: boolean; items: { text: RichText[]; children: Block[] }[] };
+
 /* ---------- Env + client ---------- */
 
 /** Read a required env var or throw a build-breaking error. */
@@ -133,6 +172,28 @@ async function queryByOrder(dataSourceId: string): Promise<any[]> {
   return res.results;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function readRichText(prop: any): RichText[] {
+  return (prop ?? []).map((t: any) => ({
+    text: t.plain_text ?? "",
+    bold: !!t.annotations?.bold,
+    italic: !!t.annotations?.italic,
+    code: !!t.annotations?.code,
+    strikethrough: !!t.annotations?.strikethrough,
+    href: t.href ?? null,
+  }));
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** "Some Post Title" → "some-post-title", for rows with no explicit Slug. */
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 /* ---------- Public fetchers ---------- */
 
 export async function getWork(): Promise<WorkData> {
@@ -183,3 +244,202 @@ export async function getProjects(): Promise<Project[]> {
 
   return projects;
 }
+
+/* ---------- Blog ---------- */
+
+/**
+ * A build renders the index, `generateStaticParams`, a `generateMetadata` and a
+ * page per post — all off the same rows and bodies. These caches keep that to
+ * one query plus one body fetch per post for the whole build.
+ */
+let postsPromise: Promise<PostMeta[]> | null = null;
+const blocksPromises = new Map<string, Promise<Block[]>>();
+
+/** Rough reading time: whole minutes at 200 words per minute, minimum 1. */
+function readingMinutes(blocks: Block[]): number {
+  const words = countWords(blocks);
+  return words === 0 ? 0 : Math.max(1, Math.round(words / 200));
+}
+
+function countWords(blocks: Block[]): number {
+  let words = 0;
+  for (const block of blocks) {
+    if (block.kind === "code") {
+      words += block.text.split(/\s+/).filter(Boolean).length;
+    } else if (block.kind === "list") {
+      for (const item of block.items) {
+        words += item.text.map((t) => t.text).join(" ").split(/\s+/).filter(Boolean).length;
+        words += countWords(item.children);
+      }
+    } else if (block.kind !== "divider") {
+      words += block.text.map((t) => t.text).join(" ").split(/\s+/).filter(Boolean).length;
+    }
+  }
+  return words;
+}
+
+/**
+ * Posts, newest first, drafts excluded.
+ *
+ * Unlike Work and Projects this does **not** hard-fail: a blog legitimately
+ * starts empty, and the branch has to build before NOTION_BLOG_DB_ID exists in
+ * the environment. A missing id logs a warning and ships an empty index rather
+ * than breaking the deploy.
+ */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export async function getPosts(): Promise<PostMeta[]> {
+  postsPromise ??= loadPosts();
+  return postsPromise;
+}
+
+async function loadPosts(): Promise<PostMeta[]> {
+  const databaseId = process.env.NOTION_BLOG_DB_ID;
+  if (!databaseId) {
+    console.warn(
+      "[lib/notion] NOTION_BLOG_DB_ID is not set — /blog will render empty. " +
+        "Set it in .env.local and in Vercel to publish posts.",
+    );
+    return [];
+  }
+
+  const dataSourceId = await resolveDataSourceId(databaseId);
+  const res = await notion().dataSources.query({
+    data_source_id: dataSourceId,
+    sorts: [{ property: "Date", direction: "descending" }],
+    page_size: 100,
+  });
+
+  const posts: PostMeta[] = [];
+  for (const row of res.results as any[]) {
+    const p = row.properties;
+    if (p.Published?.checkbox !== true) continue; // draft
+
+    const title = readTitle(p.Title);
+    const explicitSlug = readText(p.Slug);
+    const slug = slugify(explicitSlug || title);
+    if (!slug) continue; // no title and no slug — nothing to link to
+
+    const start = p.Date?.date?.start;
+    posts.push({
+      id: row.id,
+      slug,
+      title,
+      summary: readText(p.Summary),
+      date: readMonthYear(p.Date),
+      dateISO: typeof start === "string" ? start : null,
+      tags: readMultiSelect(p.Tags),
+      readingMinutes: readingMinutes(await getPostBlocks(row.id)),
+    });
+  }
+  return posts;
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** The post with this slug, or null when nothing matches. */
+export async function getPost(slug: string): Promise<PostMeta | null> {
+  const posts = await getPosts();
+  return posts.find((p) => p.slug === slug) ?? null;
+}
+
+/**
+ * A page's body, flattened into the shapes the renderer understands.
+ *
+ * Consecutive list items are grouped into one list so they render as a single
+ * <ul>/<ol>. Block types the blog does not support yet — images among them,
+ * because Notion's file URLs expire about an hour after they are handed out and
+ * this site bakes its HTML at build time — are skipped.
+ */
+export async function getPostBlocks(pageId: string): Promise<Block[]> {
+  let blocks = blocksPromises.get(pageId);
+  if (!blocks) {
+    blocks = listBlockChildren(pageId).then(groupBlocks);
+    blocksPromises.set(pageId, blocks);
+  }
+  return blocks;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function listBlockChildren(blockId: string, depth = 0): Promise<any[]> {
+  // Notion nests lists arbitrarily deep; two levels is plenty for a post and
+  // keeps a malformed page from fanning out into hundreds of API calls.
+  if (depth > 2) return [];
+
+  const out: any[] = [];
+  let cursor: string | undefined;
+  do {
+    const res: any = await notion().blocks.children.list({
+      block_id: blockId,
+      start_cursor: cursor,
+      page_size: 100,
+    });
+    for (const block of res.results) {
+      out.push({
+        ...block,
+        childBlocks: block.has_children ? await listBlockChildren(block.id, depth + 1) : [],
+      });
+    }
+    cursor = res.has_more ? res.next_cursor : undefined;
+  } while (cursor);
+  return out;
+}
+
+function groupBlocks(raw: any[]): Block[] {
+  const out: Block[] = [];
+
+  for (const block of raw) {
+    const type = block.type;
+
+    if (type === "bulleted_list_item" || type === "numbered_list_item") {
+      const ordered = type === "numbered_list_item";
+      const last = out[out.length - 1];
+      const item = {
+        text: readRichText(block[type]?.rich_text),
+        children: groupBlocks(block.childBlocks ?? []),
+      };
+      // Fold into the run of list items directly above, if there is one.
+      if (last && last.kind === "list" && last.ordered === ordered) last.items.push(item);
+      else out.push({ kind: "list", ordered, items: [item] });
+      continue;
+    }
+
+    switch (type) {
+      case "heading_1":
+      case "heading_2":
+      case "heading_3":
+        out.push({
+          kind: "heading",
+          level: Number(type.slice(-1)) as 1 | 2 | 3,
+          text: readRichText(block[type]?.rich_text),
+        });
+        break;
+      case "paragraph": {
+        const text = readRichText(block.paragraph?.rich_text);
+        // Notion leaves empty paragraphs behind as spacing; the CSS handles that.
+        if (text.some((t) => t.text.trim())) out.push({ kind: "paragraph", text });
+        break;
+      }
+      case "quote":
+        out.push({ kind: "quote", text: readRichText(block.quote?.rich_text) });
+        break;
+      case "code":
+        out.push({
+          kind: "code",
+          language: block.code?.language ?? "text",
+          text: readRichText(block.code?.rich_text)
+            .map((t) => t.text)
+            .join(""),
+        });
+        break;
+      case "divider":
+        out.push({ kind: "divider" });
+        break;
+      default:
+        // Unsupported block type — skipped on purpose.
+        break;
+    }
+  }
+
+  return out;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
