@@ -85,6 +85,60 @@ a {
   }
 }
 
+/* Navigating between the home page and the blog moves the header between two
+   states: the rule runs *through* the nav on the home page and *below* it on
+   the blog. Going to the blog the words lift and the rule drops away from
+   them; coming back the two close up again. Each page animates in from the
+   other's geometry, so the pair reads as one movement and its reverse. The
+   34px is the gap between the two rule positions — 44px here, 78px in
+   .blog-rule — and has to be kept in step with them. */
+@keyframes ruleToBlog {
+  from {
+    transform: translateY(-34px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes ruleToHome {
+  from {
+    transform: translateY(34px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes navToBlog {
+  from {
+    transform: translateY(9px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes navToHome {
+  from {
+    transform: translateY(-9px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ---- Layout shell ---- */
 .site-root {
   position: relative;
@@ -108,6 +162,19 @@ a {
 
 .site-header {
   display: contents;
+}
+
+/* Home: the rule rises back through the nav, the left group slides forward. */
+.site-root .site-rule {
+  animation: ruleToHome 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-root .site-nav {
+  animation: navToHome 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-root .site-content {
+  animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
 }
 
 .site-nav {
@@ -173,26 +240,102 @@ a {
 }
 
 /* ---- Nav ---- */
+/* Every item reserves the active pill's 3px border, drawn transparent, so
+   hovering (which only recolours it) never shifts the row. */
 .navbtn {
   font-family: var(--font-fredoka), sans-serif;
   font-weight: 600;
   font-size: 16px;
-  border: none;
+  border: 3px solid transparent;
   background: transparent;
   color: var(--ink);
-  padding: 8px 16px;
+  padding: 5px 13px; /* + 3px border = the 16px the item had before */
   border-radius: 999px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
   display: inline-block;
+}
+
+/* Hover: an inactive item becomes a ghost of the active sticker — outlined
+   on the panel colour, lifted and tilted the way every other button on the
+   site lifts. The active pill stays put; you are already there. Gated on a
+   real pointer so a tap on a phone does not leave a stuck hover. */
+@media (hover: hover) {
+  .navbtn:not(.active):hover {
+    background: var(--panel);
+    border-color: var(--line);
+    box-shadow: 3px 3px 0 var(--shadow);
+    transform: translateY(-2px) rotate(-1.5deg);
+  }
+}
+
+.navbtn:not(.active):focus-visible {
+  outline: none;
+  background: var(--panel);
+  border-color: var(--line);
+  box-shadow: 3px 3px 0 var(--shadow);
 }
 
 .navbtn.active {
   background: #2e4bd8;
   color: #fff;
-  border: 3px solid #151310;
+  border-color: #151310;
   padding: 5px 16px;
   box-shadow: 3px 3px 0 var(--shadow);
+}
+
+/* An item that opens a new tab keeps room on its right for an outward arrow,
+   which rises into place with the ghost sticker. The room is reserved at rest
+   so revealing the arrow never changes the item's width. */
+.navbtn-ext {
+  position: relative;
+  padding-right: 20px; /* 7px more than the others: the arrow's corner */
+}
+
+/* Tucked into the top-right corner like a superscript, which is where an
+   outward arrow is expected and needs less room than sitting on the line. */
+.navbtn-ext-arrow {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform: translate(-3px, 3px);
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+
+@media (hover: hover) {
+  .navbtn-ext:hover .navbtn-ext-arrow {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.navbtn-ext:focus-visible .navbtn-ext-arrow {
+  opacity: 1;
+  transform: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .site-nav-right {
@@ -200,18 +343,46 @@ a {
   right: 40px;
 }
 
+/* A round icon button, the same 38px tall as the old "Light"/"Dark" pill.
+   Both icons are rendered; the theme attribute on <html> picks which shows. */
 .theme-toggle {
-  font-family: var(--font-fredoka), sans-serif;
-  font-weight: 600;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   color: var(--ink);
   background: var(--panel);
   border: 3px solid var(--line);
   border-radius: 999px;
-  padding: 7px 16px;
   margin-left: 6px;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--shadow);
+  transition: transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+  transform: rotate(-15deg);
+}
+
+.theme-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-icon-sun,
+html[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon-sun {
+  display: block;
 }
 
 /* ---- Googly eyes ---- */
@@ -510,17 +681,33 @@ a {
 
   .navbtn {
     font-size: 13px;
-    padding: 6px 10px;
+    padding: 3px 7px;
   }
 
   .navbtn.active {
     padding: 3px 10px;
   }
 
+  .navbtn-ext {
+    padding-right: 14px;
+  }
+
+  .navbtn-ext-arrow {
+    right: 4px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+  }
+
   .theme-toggle {
-    font-size: 12px;
-    padding: 5px 12px;
+    width: 32px;
+    height: 32px;
     margin-left: 4px;
+  }
+
+  .theme-icon {
+    width: 17px;
+    height: 17px;
   }
 
   .site-content {
@@ -587,6 +774,30 @@ a {
   }
 }
 
+/* Anyone who asks for less motion gets the layout without the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .navbtn:not(.active):hover {
+    transform: none;
+  }
+
+  .navbtn-ext-arrow {
+    transition: none;
+  }
+
+  .site-root .site-nav,
+  .site-root .site-rule,
+  .site-root .site-content,
+  .blog-bar .site-nav,
+  .blog-rule,
+  .blog-back,
+  .blog-wrap,
+  .hero-deco,
+  .contact-deco,
+  .float-deco {
+    animation: none;
+  }
+}
+
 /* ===================================================================
    Blog (/blog)
    Its own route rather than a section of the scroll, so posts can have
@@ -603,67 +814,78 @@ a {
   font-family: var(--font-inter), sans-serif;
 }
 
-/* The blog scrolls, so the rule is the bar's own border rather than the
-   free-standing line the home page's nav breaks. The two nav groups drop out
-   of absolute positioning and lay out in this flex row instead. */
+/* The blog wears the same header as the home page — nav in the same place,
+   same rule — with the rule sitting below the nav rather than through it. That
+   one difference is what the navigation animation moves. */
 .blog-bar {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 28px;
+  height: 82px;
   background: var(--bg);
-  border-bottom: 2.5px solid var(--line);
 }
 
-.blog-bar .site-header {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+.blog-rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 78px;
+  border-top: 2.5px solid var(--line);
+  pointer-events: none;
+  animation: ruleToBlog 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.blog-bar .site-nav,
-.blog-bar .site-nav-right {
-  position: static;
-  max-width: none;
-  padding: 0;
-  background: transparent;
-}
-
-/* Just the arrow — no wordmark. */
-.blog-back {
-  font-size: 22px;
-  line-height: 1;
-  color: var(--ink);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  margin-left: -8px;
-  border-radius: 999px;
-  transition: background 0.15s ease, transform 0.15s ease;
-}
-
-.blog-back:hover {
-  background: var(--panel);
-  transform: translateX(-2px);
+/* .site-header is display:contents, so the two nav groups position themselves
+   against .blog-bar using the same offsets they use on the home page. */
+.blog-bar .site-nav {
+  animation: navToBlog 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .blog-bar .theme-toggle {
   margin-left: auto;
-  font-family: var(--font-inter), sans-serif;
+}
+
+/* Back to the landing page: a thin stroked arrow sitting under the rule,
+   flush with the text of the first nav pill (40px offset + 16px nav padding
+   + 16px pill padding). Absolute so it
+   does not push the centred masthead down; it goes into the flow below 860px
+   where the header is no longer a fixed height. */
+.blog-back {
+  animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
+  position: absolute;
+  top: 110px;
+  left: 72px;
+  z-index: 2;
+  display: block;
+  width: 56px;
+  height: 24px;
+  padding: 8px;
+  box-sizing: content-box;
+  margin: -8px;
+  color: var(--ink);
+  transition: transform 0.18s ease;
+}
+
+.blog-back svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.blog-back:hover {
+  transform: translateX(-4px);
 }
 
 .blog-wrap {
+  animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
   max-width: 780px;
   margin: 0 auto;
-  padding: 64px 40px 96px;
+  padding: 56px 40px 96px;
 }
 
 .blog-title {
@@ -877,14 +1099,43 @@ ol.blog-list {
 }
 
 @media (max-width: 860px) {
+  /* Too narrow for one row: the nav wraps, so the bar grows and carries the
+     rule as its own border instead of a line at a fixed height. */
   .blog-bar {
+    height: auto;
+    display: flex;
     flex-wrap: wrap;
-    padding: 8px 12px;
+    justify-content: center;
+    align-items: center;
     gap: 4px;
+    padding: 8px 12px;
+    border-bottom: 2.5px solid var(--line);
+  }
+
+  .blog-rule {
+    display: none;
   }
 
   .blog-bar .site-header {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
+    gap: 4px;
+  }
+
+  .blog-bar .site-nav,
+  .blog-bar .site-nav-right {
+    position: static;
+    max-width: none;
+    padding: 0;
+    background: transparent;
+  }
+
+  .blog-back {
+    position: static;
+    margin: 20px 20px -16px;
   }
 
   .blog-wrap {

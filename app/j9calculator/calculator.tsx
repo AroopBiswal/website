@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Eye, useEyeTracking } from "../components/googly";
+import { ThemeToggle } from "../components/theme-toggle";
 import {
   HOLIDAY_SETS,
   type HolidaySetId,
@@ -48,7 +49,6 @@ export default function Calculator() {
   const [newName, setNewName] = useState("");
   const [showWeeks, setShowWeeks] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const parsedWeeks = Number.parseInt(weeksText, 10);
   const weeksValid =
@@ -57,7 +57,6 @@ export default function Calculator() {
   const startValid = isValidISODate(start);
 
   useEffect(() => {
-    setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
     let saved: Partial<Saved> = {};
     try {
       saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
@@ -96,17 +95,6 @@ export default function Calculator() {
     [start, startValid, weeksNumber, holidaySet, custom],
   );
 
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    if (next === "dark") document.documentElement.dataset.theme = "dark";
-    else delete document.documentElement.dataset.theme;
-    try {
-      localStorage.setItem("site-theme", next);
-    } catch {
-      // Not being able to remember the choice is not worth failing over.
-    }
-  };
 
   const addCustom = () => {
     if (!isValidISODate(newDate)) return;
@@ -141,9 +129,7 @@ export default function Calculator() {
           <Link href="/" className="j9-back">
             <span aria-hidden>&larr;</span> aroopbiswal.com
           </Link>
-          <button className="theme-toggle" onClick={toggleTheme} suppressHydrationWarning>
-            {theme === "dark" ? "Light" : "Dark"}
-          </button>
+          <ThemeToggle />
         </div>
 
         <header className="j9-head">

@@ -3,44 +3,36 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { useEyeTracking } from "../components/googly";
-import { useTheme } from "../components/theme";
+import { ThemeToggle } from "../components/theme-toggle";
 import { SiteNav } from "../components/nav";
 
 /**
  * The chrome shared by the blog index and each post: a sticky bar carrying the
- * back link and the theme toggle, and the column the content sits in.
+ * site nav and the theme toggle, a back arrow to the landing page under it,
+ * and the column the content sits in.
  */
-export default function BlogShell({
-  backHref,
-  backLabel,
-  children,
-}: {
-  backHref: string;
-  /** Not shown — the control is just an arrow, so this is its accessible name. */
-  backLabel: string;
-  children: ReactNode;
-}) {
-  const [theme, toggleTheme] = useTheme();
+export default function BlogShell({ children }: { children: ReactNode }) {
   useEyeTracking();
 
   return (
     <div className="blog-root">
       {/* The site's own nav, so the blog reads as part of the site rather than
-          somewhere else. The back arrow goes up one level: a post to the index,
-          the index home. */}
+          somewhere else. */}
       <div className="blog-bar">
-        <Link href={backHref} className="blog-back" aria-label={backLabel}>
-          <span aria-hidden>&larr;</span>
-        </Link>
-        <SiteNav
-          active="blog"
-          toggle={
-            <button className="theme-toggle" onClick={toggleTheme} suppressHydrationWarning>
-              {theme === "dark" ? "Light" : "Dark"}
-            </button>
-          }
-        />
+        {/* The same line the home page draws at 44px, sitting below the nav
+            instead of through it. It slides between the two on navigation. */}
+        <div className="blog-rule" />
+        <SiteNav active="blog" toggle={<ThemeToggle />} />
       </div>
+
+      {/* A thin arrow below the rule, top left, back to the landing page. It
+          is outside the sticky bar on purpose: it belongs to the page, so it
+          scrolls away with it. */}
+      <Link href="/" className="blog-back" aria-label="Back to home">
+        <svg viewBox="0 0 56 24" aria-hidden focusable="false">
+          <path d="M54 12H2M12 2 2 12l10 10" />
+        </svg>
+      </Link>
 
       <main className="blog-wrap">{children}</main>
     </div>

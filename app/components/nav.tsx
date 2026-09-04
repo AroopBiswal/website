@@ -56,8 +56,13 @@ export function SiteNav({
       </nav>
 
       <nav className="site-nav site-nav-right">
-        <a className="navbtn" href={LINKS.trading} target="_blank" rel="noreferrer">
+        {/* Opens a new tab, so the hover shows an outward arrow with it. */}
+        <a className="navbtn navbtn-ext" href={LINKS.trading} target="_blank" rel="noreferrer">
           Trading
+          <svg className="navbtn-ext-arrow" viewBox="0 0 12 12" aria-hidden focusable="false">
+            <path d="M3 9 9 3M4.5 3H9v4.5" />
+          </svg>
+          <span className="sr-only"> (opens in a new tab)</span>
         </a>
         <Link className={`navbtn${active === "blog" ? " active" : ""}`} href="/blog">
           Blog

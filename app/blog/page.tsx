@@ -15,7 +15,7 @@ export default async function BlogPage() {
   const posts = await getPosts();
 
   return (
-    <BlogShell backHref="/" backLabel="aroopbiswal.com">
+    <BlogShell>
       <h1 className="blog-masthead">Blog</h1>
 
       {posts.length === 0 ? (

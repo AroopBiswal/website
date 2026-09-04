@@ -34,7 +34,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const blocks = await getPostBlocks(post.id);
 
   return (
-    <BlogShell backHref="/blog" backLabel="Blog">
+    <BlogShell>
       <article className="post">
         <header className="post-head">
           <div className="post-meta">

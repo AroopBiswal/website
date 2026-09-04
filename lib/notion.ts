@@ -106,6 +106,28 @@ function notion(): Client {
  * We keep the friendly database ID in env and resolve it to its (single) data
  * source at build time.
  */
+/**
+ * Each fetcher is asked once per build, but the dev server asks again on every
+ * request, and a client-side navigation onto the home page waits for the
+ * answer before it can mount and animate. Holding the promise makes every
+ * request after the first instant. A rejection is dropped so a transient
+ * Notion error does not stick for the life of the process; the build still
+ * fails loudly, since nothing retries it. Code edits clear it through HMR;
+ * an edit made in Notion needs the dev server restarted (or a redeploy).
+ */
+function memo<T>(load: () => Promise<T>): () => Promise<T> {
+  let promise: Promise<T> | null = null;
+  return () => {
+    if (!promise) {
+      promise = load().catch((err) => {
+        promise = null;
+        throw err;
+      });
+    }
+    return promise;
+  };
+}
+
 async function resolveDataSourceId(databaseId: string): Promise<string> {
   const db = (await notion().databases.retrieve({
     database_id: databaseId,
@@ -196,7 +218,9 @@ function slugify(value: string): string {
 
 /* ---------- Public fetchers ---------- */
 
-export async function getWork(): Promise<WorkData> {
+export const getWork = memo(loadWork);
+
+async function loadWork(): Promise<WorkData> {
   const dataSourceId = await resolveDataSourceId(requireEnv("NOTION_WORK_DB_ID"));
   const rows = await queryByOrder(dataSourceId);
 
@@ -222,7 +246,9 @@ export async function getWork(): Promise<WorkData> {
   return { featured, jobs: rest };
 }
 
-export async function getProjects(): Promise<Project[]> {
+export const getProjects = memo(loadProjects);
+
+async function loadProjects(): Promise<Project[]> {
   const dataSourceId = await resolveDataSourceId(requireEnv("NOTION_PROJECTS_DB_ID"));
   const rows = await queryByOrder(dataSourceId);
 
@@ -252,7 +278,6 @@ export async function getProjects(): Promise<Project[]> {
  * page per post — all off the same rows and bodies. These caches keep that to
  * one query plus one body fetch per post for the whole build.
  */
-let postsPromise: Promise<PostMeta[]> | null = null;
 const blocksPromises = new Map<string, Promise<Block[]>>();
 
 /** Rough reading time: whole minutes at 200 words per minute, minimum 1. */
@@ -287,10 +312,7 @@ function countWords(blocks: Block[]): number {
  * than breaking the deploy.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export async function getPosts(): Promise<PostMeta[]> {
-  postsPromise ??= loadPosts();
-  return postsPromise;
-}
+export const getPosts = memo(loadPosts);
 
 async function loadPosts(): Promise<PostMeta[]> {
   const databaseId = process.env.NOTION_BLOG_DB_ID;
