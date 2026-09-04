@@ -1,21 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import type { Job, Project, WorkData } from "@/lib/notion";
 import { useTheme } from "./theme";
-
-const TABS = ["home", "work", "projects", "about", "contact"] as const;
-type Tab = (typeof TABS)[number];
-
-const LINKS = {
-  email: "mailto:aroopbiswal@gmail.com",
-  github: "https://github.com/AroopBiswal",
-  trading: "https://aroopbiswal.com/trading",
-  linkedin: "https://linkedin.com/in/AroopBiswal/",
-  resume: "/resume.pdf",
-};
+import { LINKS, SiteNav, TABS, type Tab } from "./nav";
 
 const INTERESTS: { label: string; bg: string; fg?: string }[] = [
   { label: "Travel", bg: "#F97316" },
@@ -59,24 +48,6 @@ function Eye({
     <span className="eye" style={{ width: size, height: size, borderWidth: border, ...style }}>
       <span className="pupil" style={{ width: pupil, height: pupil }} />
     </span>
-  );
-}
-
-function NavBtn({
-  t,
-  tab,
-  go,
-  children,
-}: {
-  t: Tab;
-  tab: Tab;
-  go: (t: Tab) => void;
-  children: ReactNode;
-}) {
-  return (
-    <button className={`navbtn${tab === t ? " active" : ""}`} onClick={() => go(t)}>
-      {children}
-    </button>
   );
 }
 
@@ -171,27 +142,15 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
     <div className="site-root">
       <div className="site-rule" />
 
-      <header className="site-header">
-      <nav className="site-nav">
-        <NavBtn tab={tab} go={go} t="home">Home</NavBtn>
-        <NavBtn tab={tab} go={go} t="work">Work</NavBtn>
-        <NavBtn tab={tab} go={go} t="projects">Projects</NavBtn>
-        <NavBtn tab={tab} go={go} t="contact">Contact</NavBtn>
-      </nav>
-
-      <nav className="site-nav site-nav-right">
-        <a className="navbtn" href={LINKS.trading} target="_blank" rel="noreferrer">
-          Trading
-        </a>
-        <Link className="navbtn" href="/blog">
-          Blog
-        </Link>
-        <NavBtn tab={tab} go={go} t="about">About Me</NavBtn>
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {theme === "light" ? "Dark" : "Light"}
-        </button>
-      </nav>
-      </header>
+      <SiteNav
+        active={tab}
+        go={go}
+        toggle={
+          <button className="theme-toggle" onClick={toggleTheme}>
+            {theme === "light" ? "Dark" : "Light"}
+          </button>
+        }
+      />
 
       <div className="site-content">
         {/* Home, Work, Projects and Contact are one continuous scroll. */}
