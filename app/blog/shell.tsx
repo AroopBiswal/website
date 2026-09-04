@@ -15,6 +15,7 @@ export default function BlogShell({
   children,
 }: {
   backHref: string;
+  /** Not shown — the control is just an arrow, so this is its accessible name. */
   backLabel: string;
   children: ReactNode;
 }) {
@@ -24,8 +25,8 @@ export default function BlogShell({
   return (
     <div className="blog-root">
       <header className="blog-bar">
-        <Link href={backHref} className="blog-back">
-          <span aria-hidden>&larr;</span> {backLabel}
+        <Link href={backHref} className="blog-back" aria-label={backLabel}>
+          <span aria-hidden>&larr;</span>
         </Link>
         <button className="theme-toggle" onClick={toggleTheme} suppressHydrationWarning>
           {theme === "dark" ? "Light" : "Dark"}

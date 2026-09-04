@@ -597,6 +597,8 @@ a {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--ink);
+  /* The whole blog is set in Inter, headings and body alike. */
+  font-family: var(--font-inter), sans-serif;
 }
 
 .blog-bar {
@@ -611,24 +613,29 @@ a {
   border-bottom: 2.5px solid var(--line);
 }
 
+/* Just the arrow — no wordmark. */
 .blog-back {
-  font-family: var(--font-fredoka), sans-serif;
-  font-weight: 600;
-  font-size: 15px;
+  font-size: 22px;
+  line-height: 1;
   color: var(--ink);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -8px;
+  border-radius: 999px;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .blog-back:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  background: var(--panel);
+  transform: translateX(-2px);
 }
 
 .blog-bar .theme-toggle {
   margin-left: auto;
+  font-family: var(--font-inter), sans-serif;
 }
 
 .blog-wrap {
@@ -638,7 +645,6 @@ a {
 }
 
 .blog-title {
-  font-family: var(--font-fredoka), sans-serif;
   font-weight: 700;
   font-size: clamp(38px, 7vw, 56px);
   margin: 0;
@@ -654,7 +660,6 @@ a {
 
 /* ---- Index list ---- */
 .blog-masthead {
-  font-family: var(--font-inter), sans-serif;
   font-weight: 700;
   font-size: clamp(40px, 7vw, 60px);
   letter-spacing: -1.5px;
@@ -691,7 +696,6 @@ a {
 
 .post-date,
 .post-read {
-  font-family: var(--font-inter), sans-serif;
   font-weight: 500;
   font-size: 13px;
   letter-spacing: 1.2px;
@@ -706,7 +710,6 @@ a {
 }
 
 .post-row-title {
-  font-family: var(--font-inter), sans-serif;
   font-weight: 700;
   font-size: clamp(24px, 3.4vw, 32px);
   letter-spacing: -0.8px;
@@ -730,7 +733,6 @@ a {
 }
 
 .post-tags span {
-  font-family: var(--font-inter), sans-serif;
   font-weight: 500;
   font-size: 11px;
   letter-spacing: 0.5px;
@@ -754,14 +756,9 @@ a {
   margin-bottom: 0;
 }
 
-.post {
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
-}
-
 .blog-h1,
 .blog-h2,
 .blog-h3 {
-  font-family: var(--font-inter), sans-serif;
   font-weight: 600;
   letter-spacing: -0.5px;
   line-height: 1.25;
@@ -848,7 +845,6 @@ ol.blog-list {
 }
 
 .blog-empty {
-  font-family: var(--font-inter), sans-serif;
   font-size: 16px;
   color: var(--muted);
   background: var(--panel);
