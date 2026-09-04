@@ -51,7 +51,7 @@ Key traits:
 Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A`, blue `#2E4BD8`, yellow `#FFC93C`, green `#6FB92C`, orange `#F5821F`; interest chips use `#F59E0B` `#3B82F6` `#10B981` `#F43F5E` `#F97316`.
 
 ### Key CSS classes (`globals.css`)
-`.site-root` / `.site-rule` / `.site-header` / `.site-nav`(+`.site-nav-right`) / `.site-content` / `.scroll-view` / `.section`(+`.section-centered`) (shell) · `.navbtn`(+`.active`) · `.theme-toggle` · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` / `.job-bullets` · `.project-row` / `.proj-date` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
+`.site-root` / `.site-rule` / `.site-header` / `.site-nav`(+`.site-nav-right`) / `.site-content` / `.scroll-view` / `.section`(+`.section-centered`) (shell) · `.navbtn`(+`.active`) · `.theme-toggle` (38px round icon button; `.theme-icon-sun`/`-moon` both rendered, `html[data-theme]` picks one in CSS so hydration never mismatches) · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` / `.job-bullets` · `.project-row` / `.proj-date` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
 
 `.site-header` is a `display: contents` wrapper on desktop, so the two nav groups keep their
 absolute placement over the rule. Below 860px it becomes a real flex container: the free-standing
@@ -72,6 +72,7 @@ app/
     site.tsx           # THE site — client component: nav, theme, scroll sections + About panel, eye tracking
     googly.tsx         # <Eye> + useEyeTracking(), extracted so other pages get the eyes
     theme.ts           # useTheme() — reads html[data-theme], shared by the site and the blog
+    theme-toggle.tsx   # <ThemeToggle /> — the sun/moon icon button, used by the site, the blog and the calculator
   blog/
     page.tsx           # Index: post list from Notion
     [slug]/page.tsx    # One post, body rendered from Notion blocks
@@ -100,7 +101,7 @@ Work & Projects content lives in two Notion databases, fetched **at build time o
 - **Env** (`.env.local`, git-ignored; also set in Vercel → Env Variables): `NOTION_TOKEN`, `NOTION_WORK_DB_ID` (`3a0e7c7c7bb480dc86a8da469436dfab`), `NOTION_PROJECTS_DB_ID` (`192d1b1ef9974e7496639f3efc7b4c4d`), `NOTION_BLOG_DB_ID` (`887b64c1aada49ee842921fc65b42ed2`). The integration must be shared with **all three** DBs — a database created through the Notion MCP connector is *not* automatically shared with the site's integration, and the build 404s until it is.
 - **Work DB** props: `Company` (title), `Role`, `Period`, `Blurb` (rich text), `Order` (number), **`Highlights` (rich text — one bullet per line, rendered under the featured card only)**. **Projects DB** props: `Title` (title), `Description` (rich text), `Tags` (multi-select), `Link` (url), `Date` (date — now shown under the project number), `Order` (number).
 - `Highlights` is read by `readLines()` (splits on newlines, strips a leading `-`/`•`/`*`) and `Date` by `readMonthYear()` (hand-rolled "Jun 2026", never `Intl`). **Both degrade quietly**: a missing property yields `[]` / `null` and the row just omits them, so the build never breaks on a database that has not grown the column yet.
-- **See an edit**: `npm run build` re-fetches; a refresh alone won't (baked). `npm run dev` re-runs per request, so dev + browser refresh works for quick iteration.
+- **See an edit**: `npm run build` re-fetches; a refresh alone won't (baked). **All three fetchers are memoized for the life of the process** (`memo()` in `lib/notion.ts`), so in dev a Notion edit needs the dev server restarted, or a code edit that makes HMR re-evaluate `lib/notion.ts`. This is deliberate: without it every client-side navigation onto `/` waited ~400ms for four Notion calls, which read as a lag in the nav transition coming back from the blog. A rejected fetch is dropped from the cache so a transient Notion error does not stick.
 
 ## Blog (`/blog`)
 
@@ -127,9 +128,9 @@ to `app/components/theme.ts` so the blog and the main site share one implementat
 - **This one does not loud-fail.** Unlike `getWork`/`getProjects`, a missing
   `NOTION_BLOG_DB_ID` logs a warning and returns `[]`, because a blog legitimately starts
   empty and the branch had to build before the variable existed.
-- Two module-level caches (`postsPromise`, `blocksPromises`) hold the query and each body
-  for the life of a build — the index, `generateStaticParams`, every `generateMetadata`
-  and every post page all read the same rows.
+- `getPosts` is wrapped in the same `memo()` as Work and Projects, and `blocksPromises`
+  holds each body, for the life of a build — the index, `generateStaticParams`, every
+  `generateMetadata` and every post page all read the same rows.
 
 ## Janine's end date calculator (`/j9calculator`)
 
@@ -207,6 +208,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **Nav transition lag fixed** on `feature/nav-transition`: blog → home lagged while home → blog did not, because the dev server re-ran `getWork`/`getProjects` (four Notion calls, ~400ms) on every request while the blog memoized `getPosts`. All three fetchers now share `memo()` in `lib/notion.ts`; the home page's RSC payload dropped from ~430ms to ~7ms on repeat requests. Production was never affected (built once, `force-static`). Cost: a Notion edit needs a dev-server restart to show up. Same branch: a **thin stroked back arrow** (`.blog-back`, inline SVG, 56×24, 1.5px stroke) under the rule at the top left of every blog page, always to `/`. Absolute at desktop so the centred masthead stays put, in flow below 860px. Verified in headless Chrome at 1280px and in a 390px iframe. Also the **theme toggle became an icon**: `app/components/theme-toggle.tsx` renders a round button with a sun (while dark) or moon (while light), replacing the "Light"/"Dark" text pill on the site, the blog and the calculator; the calculator's private copy of the toggle logic went away with it. **Dev-server gotcha**: after a rewrite of `globals.css`, Turbopack kept serving the old stylesheet through a restart and a `touch`; only a real content change to the file made it recompile. **Nav hover**: an inactive `.navbtn` becomes a ghost of the active sticker on hover (panel fill, ink border, hard shadow, 2px lift with a 1.5° tilt) and on `:focus-visible` (no lift). Every item reserves a transparent 3px border with 3px less padding than the active pill, so the row never shifts; the hover is gated on `(hover: hover)` so a tap never sticks, and reduced motion drops the lift. **Trading** carries `.navbtn-ext`: an outward arrow (`.navbtn-ext-arrow`, tucked in the top-right corner) fades in with the hover to say it opens a new tab, plus an `.sr-only` note for screen readers; its 7px of extra right padding is reserved at rest so the width never changes. |
 | Sep 2026 | **Blog** on `feature/blog`: nav button between Trading and About Me, `/blog` index and `/blog/[slug]` post pages, content from a new `Blog` Notion database with the page body rendered from Notion blocks. Index styled from a reference the user supplied — centred masthead, rules between rows, date left and computed reading time right. `useTheme()` extracted to `app/components/theme.ts`. See the Blog section above for the schema, what renders, and why images are excluded. |
 | Aug 2026 | **Scroll redesign**: ported `Aroop Site.dc.html` from `~/Code/Designs/Website frontend redesign.zip`. Frame → one top rule; Home/Work/Projects/Contact became stacked sections in a single scroll view with a scroll-spy nav, while About stayed a swapped panel; section headers centred and the "Scroll ↓" hint dropped. `Job` gained `highlights` (new `Highlights` rich-text prop → bullets on the featured card) and `Project` gained `date` (the `Date` prop that already existed and was unused). Also cleared the file's standing lint errors: `NavBtn` hoisted out of render, theme read via `useSyncExternalStore` instead of setState-in-effect (7 errors → 0). **Verified**: tsc + eslint clean, and rendered against the artboard at desktop, dark mode and a real 390px viewport. **Not verified locally**: `npm run build`, which needs the Notion env vars this checkout does not have. **Wrong turn worth remembering**: the first port used `Aroop Site (scroll version).dc.html` — sticky serif-wordmark nav, blue featured card — and had to be reverted. Check the artboard name before porting. |
 | Initial | Dark charcoal multi-page site (hero, experience, projects, contact + /about page) |

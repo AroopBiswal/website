@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import type { Job, Project, WorkData } from "@/lib/notion";
-import { useTheme } from "./theme";
+import { ThemeToggle } from "./theme-toggle";
 import { LINKS, SiteNav, TABS, type Tab } from "./nav";
 
 const INTERESTS: { label: string; bg: string; fg?: string }[] = [
@@ -53,7 +53,6 @@ function Eye({
 
 export default function Site({ work, projects }: { work: WorkData; projects: Project[] }) {
   const [tab, setTab] = useState<Tab>("home");
-  const [theme, toggleTheme] = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   /** About is a panel you switch to; everything else is a scroll target. */
@@ -145,11 +144,7 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
       <SiteNav
         active={tab}
         go={go}
-        toggle={
-          <button className="theme-toggle" onClick={toggleTheme}>
-            {theme === "light" ? "Dark" : "Light"}
-          </button>
-        }
+        toggle={<ThemeToggle />}
       />
 
       <div className="site-content">
