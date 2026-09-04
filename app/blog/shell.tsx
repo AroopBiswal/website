@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import Link from "next/link";
 import { useEyeTracking } from "../components/googly";
 import { useTheme } from "../components/theme";
 import { SiteNav } from "../components/nav";
@@ -10,16 +9,7 @@ import { SiteNav } from "../components/nav";
  * The chrome shared by the blog index and each post: a sticky bar carrying the
  * back link and the theme toggle, and the column the content sits in.
  */
-export default function BlogShell({
-  backHref,
-  backLabel,
-  children,
-}: {
-  backHref: string;
-  /** Not shown — the control is just an arrow, so this is its accessible name. */
-  backLabel: string;
-  children: ReactNode;
-}) {
+export default function BlogShell({ children }: { children: ReactNode }) {
   const [theme, toggleTheme] = useTheme();
   useEyeTracking();
 
@@ -29,9 +19,9 @@ export default function BlogShell({
           somewhere else. The back arrow goes up one level: a post to the index,
           the index home. */}
       <div className="blog-bar">
-        <Link href={backHref} className="blog-back" aria-label={backLabel}>
-          <span aria-hidden>&larr;</span>
-        </Link>
+        {/* The same line the home page draws at 44px, sitting below the nav
+            instead of through it. It slides between the two on navigation. */}
+        <div className="blog-rule" />
         <SiteNav
           active="blog"
           toggle={

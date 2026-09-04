@@ -85,15 +85,45 @@ a {
   }
 }
 
-/* Navigating between the home page and the blog swaps one header for another.
-   These run on mount so the swap reads as a move rather than a jump-cut. */
-@keyframes barIn {
+/* Navigating between the home page and the blog moves the header between two
+   states: the rule runs *through* the nav on the home page and *below* it on
+   the blog. Going to the blog the words lift and the rule drops away from
+   them; coming back the two close up again. Each page animates in from the
+   other's geometry, so the pair reads as one movement and its reverse. The
+   34px is the gap between the two rule positions — 44px here, 78px in
+   .blog-rule — and has to be kept in step with them. */
+@keyframes ruleToBlog {
   from {
-    opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-34px);
   }
   to {
-    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ruleToHome {
+  from {
+    transform: translateY(34px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes navToBlog {
+  from {
+    transform: translateY(9px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes navToHome {
+  from {
+    transform: translateY(-9px);
+  }
+  to {
     transform: none;
   }
 }
@@ -134,9 +164,13 @@ a {
   display: contents;
 }
 
-.site-root .site-nav,
+/* Home: the rule rises back through the nav, the left group slides forward. */
 .site-root .site-rule {
-  animation: barIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: ruleToHome 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-root .site-nav {
+  animation: navToHome 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .site-root .site-content {
@@ -625,7 +659,8 @@ a {
   .site-root .site-nav,
   .site-root .site-rule,
   .site-root .site-content,
-  .blog-bar,
+  .blog-bar .site-nav,
+  .blog-rule,
   .blog-wrap,
   .hero-deco,
   .contact-deco,
@@ -650,57 +685,31 @@ a {
   font-family: var(--font-inter), sans-serif;
 }
 
-/* The blog scrolls, so the rule is the bar's own border rather than the
-   free-standing line the home page's nav breaks. The two nav groups drop out
-   of absolute positioning and lay out in this flex row instead. */
+/* The blog wears the same header as the home page — nav in the same place,
+   same rule — with the rule sitting below the nav rather than through it. That
+   one difference is what the navigation animation moves. */
 .blog-bar {
-  animation: barIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 28px;
+  height: 82px;
   background: var(--bg);
-  border-bottom: 2.5px solid var(--line);
 }
 
-.blog-bar .site-header {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+.blog-rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 78px;
+  border-top: 2.5px solid var(--line);
+  pointer-events: none;
+  animation: ruleToBlog 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.blog-bar .site-nav,
-.blog-bar .site-nav-right {
-  position: static;
-  max-width: none;
-  padding: 0;
-  background: transparent;
-}
-
-/* Just the arrow — no wordmark. */
-.blog-back {
-  font-size: 22px;
-  line-height: 1;
-  color: var(--ink);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  margin-left: -8px;
-  border-radius: 999px;
-  transition: background 0.15s ease, transform 0.15s ease;
-}
-
-.blog-back:hover {
-  background: var(--panel);
-  transform: translateX(-2px);
+/* .site-header is display:contents, so the two nav groups position themselves
+   against .blog-bar using the same offsets they use on the home page. */
+.blog-bar .site-nav {
+  animation: navToBlog 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .blog-bar .theme-toggle {
@@ -712,7 +721,7 @@ a {
   animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
   max-width: 780px;
   margin: 0 auto;
-  padding: 64px 40px 96px;
+  padding: 56px 40px 96px;
 }
 
 .blog-title {
@@ -926,14 +935,38 @@ ol.blog-list {
 }
 
 @media (max-width: 860px) {
+  /* Too narrow for one row: the nav wraps, so the bar grows and carries the
+     rule as its own border instead of a line at a fixed height. */
   .blog-bar {
+    height: auto;
+    display: flex;
     flex-wrap: wrap;
-    padding: 8px 12px;
+    justify-content: center;
+    align-items: center;
     gap: 4px;
+    padding: 8px 12px;
+    border-bottom: 2.5px solid var(--line);
+  }
+
+  .blog-rule {
+    display: none;
   }
 
   .blog-bar .site-header {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
+    gap: 4px;
+  }
+
+  .blog-bar .site-nav,
+  .blog-bar .site-nav-right {
+    position: static;
+    max-width: none;
+    padding: 0;
+    background: transparent;
   }
 
   .blog-wrap {
