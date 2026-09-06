@@ -149,16 +149,15 @@ the trap drops the upper jaw. Pressing every safe tooth — `count - 1` of them 
 - **The trap is drawn on start, not during render.** Randomness in a render would differ
   between the server and the browser, and drawing it lazily on the first press would mean
   the round is settled as you go rather than decided up front.
+- **All the teeth are on the upper jaw and all of them are clickable**, so the number in
+  the mouth is exactly the number you picked. The lower jaw is bare — it used to carry a
+  decorative matching row, which made the mouth show twice your number.
 - **The jaw** is two absolutely positioned blocks with a gap; losing translates the upper
-  one down by `--close` so its teeth mesh with the lower set. `--close` is the resting gap
-  between the two tooth rows (42px desktop, 36px mobile) plus enough to overlap, so it has
-  to change with the jaw heights.
+  one down by `--close` so the teeth land on the lower jaw. `--close` is the resting gap
+  between the tooth tips and that jaw plus a few px, so it has to change with the jaw
+  heights and the tooth length.
 - The trap tooth stays put and turns red when it fires — `.tooth[data-trap]` overrides the
   pressed transform, so it does not retract like the safe ones.
-
-**Gotcha.** `.tooth-row-lower` has to reset `bottom: auto`. It shares `.tooth-row`, which
-sets `bottom`; leaving both `top` and `bottom` set on an auto-height absolute box stretches
-it and drops the teeth to the wrong edge.
 
 ## Janine's end date calculator (`/j9calculator`)
 

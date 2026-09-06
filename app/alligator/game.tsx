@@ -123,13 +123,9 @@ export default function Game() {
           </div>
         </div>
 
-        <div className="gator-lower">
-          <div className="tooth-row tooth-row-lower" aria-hidden>
-            {teeth.map((i) => (
-              <span key={i} className="tooth tooth-static" />
-            ))}
-          </div>
-        </div>
+        {/* No teeth on the lower jaw: the mouth holds exactly the number you
+            picked, all of them clickable, one of them the trap. */}
+        <div className="gator-lower" />
       </div>
     </PageShell>
   );

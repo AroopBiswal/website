@@ -1800,8 +1800,8 @@ html[data-theme="dark"] .j9-root {
 
 /* ---- The alligator ---- */
 .gator {
-  /* How far the upper jaw travels to bite: the 42px resting gap between the
-     two rows of teeth, plus enough to mesh them. */
+  /* How far the upper jaw travels to bite: the resting gap between the tips of
+     the teeth and the lower jaw, plus a few px so they press into it. */
   --close: 66px;
   position: relative;
   height: 380px;
@@ -1916,20 +1916,6 @@ html[data-theme="dark"] .j9-root {
   cursor: default;
 }
 
-.tooth-row-lower {
-  bottom: auto;
-  top: -30px;
-  align-items: flex-end;
-}
-
-.tooth-static {
-  height: 30px;
-  border: 4px solid #151310;
-  border-bottom: none;
-  border-radius: 12px 12px 0 0;
-  pointer-events: none;
-}
-
 @media (max-width: 860px) {
   .gator {
     height: 300px;
@@ -1959,14 +1945,4 @@ html[data-theme="dark"] .j9-root {
     transform: translateY(-34px);
   }
 
-  .tooth-row-lower {
-    /* The .tooth-row rule above sets `bottom`; leaving it set alongside `top`
-       stretches the row and drops the teeth to the wrong edge. */
-    bottom: auto;
-    top: -24px;
-  }
-
-  .tooth-static {
-    height: 24px;
-  }
 }
