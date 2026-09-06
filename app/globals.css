@@ -173,6 +173,23 @@ a {
   animation: navToHome 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Opening the About panel makes the same move the blog and the alligator make
+   on arrival, and closing it reverses that. It animates `top` rather than
+   `transform` on purpose: the arrival keyframes above hold a transform through
+   their fill, which would win over anything set here. */
+.site-rule,
+.site-nav {
+  transition: top 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-root[data-panel="about"] .site-rule {
+  top: 78px;
+}
+
+.site-root[data-panel="about"] .site-nav {
+  top: 12px;
+}
+
 .site-root .site-content {
   animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
 }

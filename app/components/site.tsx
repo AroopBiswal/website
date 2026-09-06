@@ -138,7 +138,10 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
   };
 
   return (
-    <div className="site-root">
+    // About is a panel rather than part of the scroll, so it gets the same
+    // header treatment as the pages with their own routes: the rule drops
+    // below the nav while it is open, and closes back up when you leave.
+    <div className="site-root" data-panel={tab === "about" ? "about" : undefined}>
       <div className="site-rule" />
 
       <SiteNav

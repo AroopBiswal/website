@@ -36,6 +36,14 @@ Key traits:
 - Floating blob characters with eyes on the home panel
 - **One scroll, one panel**: Home / Work / Projects / Contact are stacked full-height sections inside a single `.scroll-view`; the nav scrolls to them and a scroll-spy lights the matching pill. **About Me is different** — it stays a swapped panel (hidden `.scroll-view`, `panelIn` animation) with its own 3-section track and side dots, which is why the nav separates it with a divider.
 - Section headers are **centred** (label above title); there is no "Scroll ↓" hint
+- **The header has two states.** The rule runs *through* the nav on the scrolling home
+  page and sits *below* it everywhere else — the blog, the alligator, and the About panel.
+  Moving between them slides the rule down (44px → 78px) and lifts the words, and reverses
+  coming back.
+- The two standalone routes animate that on arrival with keyframes. About is a panel on an
+  already-mounted page, so it toggles `data-panel="about"` on `.site-root` and transitions
+  **`top`** instead — the arrival keyframes hold a `transform` through their fill, which
+  would win over anything a class tried to set.
 - Light/Dark theme toggle (button in nav), applied as `html[data-theme="dark"]`. Priority (init script in `layout.tsx`, runs pre-paint to prevent flash): explicit toggle choice in `localStorage("site-theme")` → system `prefers-color-scheme` → **dark** as final fallback. Hero name keeps white fill + black stroke in both themes (`--hero-fill`/`--hero-stroke` only set in `:root`).
 
 ### Tokens (CSS vars in `globals.css`)
@@ -75,10 +83,12 @@ app/
     page-shell.tsx     # Sticky nav bar + rule + back arrow + column, for /blog and /alligator
     nav.tsx            # SiteNav — the header, buttons on the home page, links elsewhere
     theme-toggle.tsx   # <ThemeToggle /> — the sun/moon icon button, used by the site, the blog and the calculator
-  alligator/
-    page.tsx           # /alligator route shell (force-static, metadata)
-    game.tsx           # The game — client component
-  blog/
+  (chrome)/            # Route group: shared PageShell layout, URLs unaffected
+    layout.tsx         # Keeps the header mounted across /blog <-> /alligator
+    alligator/
+      page.tsx         # /alligator route shell (force-static, metadata)
+      game.tsx         # The game — client component
+    blog/
     page.tsx           # Index: post list from Notion
     [slug]/page.tsx    # One post, body rendered from Notion blocks
     blocks.tsx         # Notion blocks -> JSX
@@ -106,6 +116,15 @@ Work & Projects content lives in two Notion databases, fetched **at build time o
 - **Work DB** props: `Company` (title), `Role`, `Period`, `Blurb` (rich text), `Order` (number), **`Highlights` (rich text — one bullet per line, rendered under the featured card only)**. **Projects DB** props: `Title` (title), `Description` (rich text), `Tags` (multi-select), `Link` (url), `Date` (date — now shown under the project number), `Order` (number).
 - `Highlights` is read by `readLines()` (splits on newlines, strips a leading `-`/`•`/`*`) and `Date` by `readMonthYear()` (hand-rolled "Jun 2026", never `Intl`). **Both degrade quietly**: a missing property yields `[]` / `null` and the row just omits them, so the build never breaks on a database that has not grown the column yet.
 - **See an edit**: `npm run build` re-fetches; a refresh alone won't (baked). **All three fetchers are memoized for the life of the process** (`memo()` in `lib/notion.ts`), so in dev a Notion edit needs the dev server restarted, or a code edit that makes HMR re-evaluate `lib/notion.ts`. This is deliberate: without it every client-side navigation onto `/` waited ~400ms for four Notion calls, which read as a lag in the nav transition coming back from the blog. A rejected fetch is dropped from the cache so a transient Notion error does not stick.
+
+## Pages outside the home scroll (`app/(chrome)/`)
+
+`/blog` and `/alligator` live in a route group sharing `app/(chrome)/layout.tsx`, which
+renders `PageShell`. **That grouping is load-bearing, not tidiness:** Next keeps a layout
+mounted across navigations inside it, so going blog → alligator leaves the header's DOM
+alone and its arrival animation cannot replay. Before the group, every hop replayed a
+movement between two states that were already identical. The shell reads the active nav
+item from `usePathname()` rather than a prop, since one layout now serves both.
 
 ## Blog (`/blog`)
 
@@ -241,6 +260,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **Header states tidied**: the About panel now makes the same rule-drop move the blog and alligator make, via a `data-panel` attribute and a `top` transition. And `/blog` + `/alligator` moved into the `app/(chrome)/` route group so a shared layout keeps the header mounted between them — hopping between the two used to replay an arrival animation between two identical states. |
 | Sep 2026 | **Alligator** at `/alligator`: crocodile dentist with a chosen number of teeth and one random trap. Added a nav item for it, and pulled the blog's chrome out to `app/components/page-shell.tsx` (`.blog-root/-bar/-rule/-wrap/-back` renamed to `.page-*`) so the two routes share one shell rather than duplicating it. See the Alligator section above for the rule and the two layout gotchas. |
 | Sep 2026 | **Nav transition lag fixed** on `feature/nav-transition`: blog → home lagged while home → blog did not, because the dev server re-ran `getWork`/`getProjects` (four Notion calls, ~400ms) on every request while the blog memoized `getPosts`. All three fetchers now share `memo()` in `lib/notion.ts`; the home page's RSC payload dropped from ~430ms to ~7ms on repeat requests. Production was never affected (built once, `force-static`). Cost: a Notion edit needs a dev-server restart to show up. Same branch: a **thin stroked back arrow** (`.blog-back`, inline SVG, 56×24, 1.5px stroke) under the rule at the top left of every blog page, always to `/`. Absolute at desktop so the centred masthead stays put, in flow below 860px. Verified in headless Chrome at 1280px and in a 390px iframe. Also the **theme toggle became an icon**: `app/components/theme-toggle.tsx` renders a round button with a sun (while dark) or moon (while light), replacing the "Light"/"Dark" text pill on the site, the blog and the calculator; the calculator's private copy of the toggle logic went away with it. **Dev-server gotcha**: after a rewrite of `globals.css`, Turbopack kept serving the old stylesheet through a restart and a `touch`; only a real content change to the file made it recompile (append a comment, then delete it). It struck again after a branch switch + merge, and an unstyled inline SVG renders at 300×150, so **every inline SVG carries `width`/`height` attributes** as a floor; CSS still sizes them. **Nav hover**: an inactive `.navbtn` becomes a ghost of the active sticker on hover (panel fill, ink border, hard shadow, 2px lift with a 1.5° tilt) and on `:focus-visible` (no lift). Every item reserves a transparent 3px border with 3px less padding than the active pill, so the row never shifts; the hover is gated on `(hover: hover)` so a tap never sticks, and reduced motion drops the lift. **Trading** carries `.navbtn-ext`: an outward arrow (`.navbtn-ext-arrow`, tucked in the top-right corner) fades in with the hover to say it opens a new tab, plus an `.sr-only` note for screen readers; its 7px of extra right padding is reserved at rest so the width never changes. |
 | Sep 2026 | **Blog** on `feature/blog`: nav button between Trading and About Me, `/blog` index and `/blog/[slug]` post pages, content from a new `Blog` Notion database with the page body rendered from Notion blocks. Index styled from a reference the user supplied — centred masthead, rules between rows, date left and computed reading time right. `useTheme()` extracted to `app/components/theme.ts`. See the Blog section above for the schema, what renders, and why images are excluded. |

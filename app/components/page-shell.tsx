@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEyeTracking } from "./googly";
 import { ThemeToggle } from "./theme-toggle";
 import { SiteNav } from "./nav";
@@ -12,15 +13,10 @@ import { SiteNav } from "./nav";
  * between its two positions on navigation, a back arrow to the landing page,
  * and the column the content sits in.
  */
-export default function PageShell({
-  active,
-  children,
-}: {
-  /** Which nav item is lit. */
-  active: "blog" | "alligator";
-  children: ReactNode;
-}) {
+export default function PageShell({ children }: { children: ReactNode }) {
   useEyeTracking();
+  // One layout serves both routes, so which nav item is lit comes from the URL.
+  const active = usePathname().startsWith("/alligator") ? "alligator" : "blog";
 
   return (
     <div className="page-root">

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye } from "../components/googly";
-import PageShell from "../components/page-shell";
+import { Eye } from "../../components/googly";
 
 const MIN_TEETH = 4;
 const MAX_TEETH = 20;
@@ -65,7 +64,7 @@ export default function Game() {
   );
 
   return (
-    <PageShell active="alligator">
+    <>
       <h1 className="game-title">Alligator</h1>
       <p className="game-sub">
         One tooth is wired to the jaw. Press the others and they sink into the gum. Press that
@@ -133,6 +132,6 @@ export default function Game() {
           </div>
         </div>
       </div>
-    </PageShell>
+    </>
   );
 }
