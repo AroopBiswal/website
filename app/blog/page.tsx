@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPosts } from "@/lib/notion";
-import BlogShell from "./shell";
+import PageShell from "../components/page-shell";
 
 // Posts are baked in at build time, same as the rest of the site.
 export const dynamic = "force-static";
@@ -15,7 +15,7 @@ export default async function BlogPage() {
   const posts = await getPosts();
 
   return (
-    <BlogShell>
+    <PageShell active="blog">
       <h1 className="blog-masthead">Blog</h1>
 
       {posts.length === 0 ? (
@@ -42,6 +42,6 @@ export default async function BlogPage() {
           ))}
         </ul>
       )}
-    </BlogShell>
+    </PageShell>
   );
 }

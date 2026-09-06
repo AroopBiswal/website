@@ -15,19 +15,20 @@ export const LINKS = {
 };
 
 /**
- * The header, shared by the scrolling home page and the blog.
+ * The header, shared by the scrolling home page and the pages with their own
+ * routes (the blog, the alligator).
  *
  * On the home page the section links scroll the view, so they are buttons and
- * `go` is supplied. Anywhere else — the blog — there is nothing to scroll, so
- * the same items render as links back to `/#section`.
+ * `go` is supplied. Anywhere else there is nothing to scroll, so the same
+ * items render as links back to `/#section`.
  */
 export function SiteNav({
   active,
   go,
   toggle,
 }: {
-  /** Which item is lit: a section of the home page, or the blog. */
-  active: Tab | "blog";
+  /** Which item is lit: a section of the home page, or a page of its own. */
+  active: Tab | "blog" | "alligator";
   /** Supplied by the home page only; its absence switches the nav to links. */
   go?: (t: Tab) => void;
   /** The theme toggle, which each page owns. */
@@ -66,6 +67,9 @@ export function SiteNav({
         </a>
         <Link className={`navbtn${active === "blog" ? " active" : ""}`} href="/blog">
           Blog
+        </Link>
+        <Link className={`navbtn${active === "alligator" ? " active" : ""}`} href="/alligator">
+          Alligator
         </Link>
         {item("about", "About Me")}
         {toggle}

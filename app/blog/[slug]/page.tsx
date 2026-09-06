@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPost, getPostBlocks, getPosts } from "@/lib/notion";
-import BlogShell from "../shell";
+import PageShell from "../../components/page-shell";
 import Blocks from "../blocks";
 
 export const dynamic = "force-static";
@@ -34,7 +34,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const blocks = await getPostBlocks(post.id);
 
   return (
-    <BlogShell>
+    <PageShell active="blog">
       <article className="post">
         <header className="post-head">
           <div className="post-meta">
@@ -59,6 +59,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </header>
         <Blocks blocks={blocks} />
       </article>
-    </BlogShell>
+    </PageShell>
   );
 }

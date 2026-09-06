@@ -71,12 +71,16 @@ app/
   components/
     site.tsx           # THE site — client component: nav, theme, scroll sections + About panel, eye tracking
     googly.tsx         # <Eye> + useEyeTracking(), extracted so other pages get the eyes
-    theme.ts           # useTheme() — reads html[data-theme], shared by the site and the blog
+    theme.ts           # useTheme() — reads html[data-theme], shared by every page
+    page-shell.tsx     # Sticky nav bar + rule + back arrow + column, for /blog and /alligator
+    nav.tsx            # SiteNav — the header, buttons on the home page, links elsewhere
     theme-toggle.tsx   # <ThemeToggle /> — the sun/moon icon button, used by the site, the blog and the calculator
+  alligator/
+    page.tsx           # /alligator route shell (force-static, metadata)
+    game.tsx           # The game — client component
   blog/
     page.tsx           # Index: post list from Notion
     [slug]/page.tsx    # One post, body rendered from Notion blocks
-    shell.tsx          # Sticky bar (back link + theme toggle) + content column
     blocks.tsx         # Notion blocks -> JSX
   j9calculator/
     page.tsx           # /j9calculator route shell (force-static, metadata)
@@ -131,6 +135,30 @@ to `app/components/theme.ts` so the blog and the main site share one implementat
 - `getPosts` is wrapped in the same `memo()` as Work and Projects, and `blocksPromises`
   holds each body, for the life of a build — the index, `generateStaticParams`, every
   `generateMetadata` and every post page all read the same rows.
+
+## Alligator (`/alligator`)
+
+Crocodile dentist, in the site's vocabulary. `app/alligator/page.tsx` is the route
+shell; `app/alligator/game.tsx` holds the whole game as one client component. Styles
+live in the `.gator-*` / `.tooth` block at the bottom of `globals.css`.
+
+**The rule.** You pick the number of teeth (4–20, default 10). Starting a round draws
+one tooth at random as the trap. Pressing a safe tooth sinks it into the gum; pressing
+the trap drops the upper jaw. Pressing every safe tooth — `count - 1` of them — wins.
+
+- **The trap is drawn on start, not during render.** Randomness in a render would differ
+  between the server and the browser, and drawing it lazily on the first press would mean
+  the round is settled as you go rather than decided up front.
+- **The jaw** is two absolutely positioned blocks with a gap; losing translates the upper
+  one down by `--close` so its teeth mesh with the lower set. `--close` is the resting gap
+  between the two tooth rows (42px desktop, 36px mobile) plus enough to overlap, so it has
+  to change with the jaw heights.
+- The trap tooth stays put and turns red when it fires — `.tooth[data-trap]` overrides the
+  pressed transform, so it does not retract like the safe ones.
+
+**Gotcha.** `.tooth-row-lower` has to reset `bottom: auto`. It shares `.tooth-row`, which
+sets `bottom`; leaving both `top` and `bottom` set on an auto-height absolute box stretches
+it and drops the teeth to the wrong edge.
 
 ## Janine's end date calculator (`/j9calculator`)
 
@@ -208,6 +236,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **Alligator** at `/alligator`: crocodile dentist with a chosen number of teeth and one random trap. Added a nav item for it, and pulled the blog's chrome out to `app/components/page-shell.tsx` (`.blog-root/-bar/-rule/-wrap/-back` renamed to `.page-*`) so the two routes share one shell rather than duplicating it. See the Alligator section above for the rule and the two layout gotchas. |
 | Sep 2026 | **Nav transition lag fixed** on `feature/nav-transition`: blog → home lagged while home → blog did not, because the dev server re-ran `getWork`/`getProjects` (four Notion calls, ~400ms) on every request while the blog memoized `getPosts`. All three fetchers now share `memo()` in `lib/notion.ts`; the home page's RSC payload dropped from ~430ms to ~7ms on repeat requests. Production was never affected (built once, `force-static`). Cost: a Notion edit needs a dev-server restart to show up. Same branch: a **thin stroked back arrow** (`.blog-back`, inline SVG, 56×24, 1.5px stroke) under the rule at the top left of every blog page, always to `/`. Absolute at desktop so the centred masthead stays put, in flow below 860px. Verified in headless Chrome at 1280px and in a 390px iframe. Also the **theme toggle became an icon**: `app/components/theme-toggle.tsx` renders a round button with a sun (while dark) or moon (while light), replacing the "Light"/"Dark" text pill on the site, the blog and the calculator; the calculator's private copy of the toggle logic went away with it. **Dev-server gotcha**: after a rewrite of `globals.css`, Turbopack kept serving the old stylesheet through a restart and a `touch`; only a real content change to the file made it recompile (append a comment, then delete it). It struck again after a branch switch + merge, and an unstyled inline SVG renders at 300×150, so **every inline SVG carries `width`/`height` attributes** as a floor; CSS still sizes them. **Nav hover**: an inactive `.navbtn` becomes a ghost of the active sticker on hover (panel fill, ink border, hard shadow, 2px lift with a 1.5° tilt) and on `:focus-visible` (no lift). Every item reserves a transparent 3px border with 3px less padding than the active pill, so the row never shifts; the hover is gated on `(hover: hover)` so a tap never sticks, and reduced motion drops the lift. **Trading** carries `.navbtn-ext`: an outward arrow (`.navbtn-ext-arrow`, tucked in the top-right corner) fades in with the hover to say it opens a new tab, plus an `.sr-only` note for screen readers; its 7px of extra right padding is reserved at rest so the width never changes. |
 | Sep 2026 | **Blog** on `feature/blog`: nav button between Trading and About Me, `/blog` index and `/blog/[slug]` post pages, content from a new `Blog` Notion database with the page body rendered from Notion blocks. Index styled from a reference the user supplied — centred masthead, rules between rows, date left and computed reading time right. `useTheme()` extracted to `app/components/theme.ts`. See the Blog section above for the schema, what renders, and why images are excluded. |
 | Aug 2026 | **Scroll redesign**: ported `Aroop Site.dc.html` from `~/Code/Designs/Website frontend redesign.zip`. Frame → one top rule; Home/Work/Projects/Contact became stacked sections in a single scroll view with a scroll-spy nav, while About stayed a swapped panel; section headers centred and the "Scroll ↓" hint dropped. `Job` gained `highlights` (new `Highlights` rich-text prop → bullets on the featured card) and `Project` gained `date` (the `Date` prop that already existed and was unused). Also cleared the file's standing lint errors: `NavBtn` hoisted out of render, theme read via `useSyncExternalStore` instead of setState-in-effect (7 errors → 0). **Verified**: tsc + eslint clean, and rendered against the artboard at desktop, dark mode and a real 390px viewport. **Not verified locally**: `npm run build`, which needs the Notion env vars this checkout does not have. **Wrong turn worth remembering**: the first port used `Aroop Site (scroll version).dc.html` — sticky serif-wordmark nav, blue featured card — and had to be reverted. Check the artboard name before porting. |

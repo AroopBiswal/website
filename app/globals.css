@@ -91,7 +91,7 @@ a {
    them; coming back the two close up again. Each page animates in from the
    other's geometry, so the pair reads as one movement and its reverse. The
    34px is the gap between the two rule positions — 44px here, 78px in
-   .blog-rule — and has to be kept in step with them. */
+   .page-rule — and has to be kept in step with them. */
 @keyframes ruleToBlog {
   from {
     transform: translateY(-34px);
@@ -787,10 +787,10 @@ html[data-theme="dark"] .theme-icon-sun {
   .site-root .site-nav,
   .site-root .site-rule,
   .site-root .site-content,
-  .blog-bar .site-nav,
-  .blog-rule,
-  .blog-back,
-  .blog-wrap,
+  .page-bar .site-nav,
+  .page-rule,
+  .page-back,
+  .page-wrap,
   .hero-deco,
   .contact-deco,
   .float-deco {
@@ -805,7 +805,7 @@ html[data-theme="dark"] .theme-icon-sun {
    here as the bar's own border so it stays put while the page scrolls.
    =================================================================== */
 
-.blog-root {
+.page-root {
   position: relative;
   min-height: 100dvh;
   background: var(--bg);
@@ -817,7 +817,7 @@ html[data-theme="dark"] .theme-icon-sun {
 /* The blog wears the same header as the home page — nav in the same place,
    same rule — with the rule sitting below the nav rather than through it. That
    one difference is what the navigation animation moves. */
-.blog-bar {
+.page-bar {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -825,7 +825,7 @@ html[data-theme="dark"] .theme-icon-sun {
   background: var(--bg);
 }
 
-.blog-rule {
+.page-rule {
   position: absolute;
   left: 0;
   right: 0;
@@ -836,12 +836,12 @@ html[data-theme="dark"] .theme-icon-sun {
 }
 
 /* .site-header is display:contents, so the two nav groups position themselves
-   against .blog-bar using the same offsets they use on the home page. */
-.blog-bar .site-nav {
+   against .page-bar using the same offsets they use on the home page. */
+.page-bar .site-nav {
   animation: navToBlog 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.blog-bar .theme-toggle {
+.page-bar .theme-toggle {
   margin-left: auto;
 }
 
@@ -850,7 +850,7 @@ html[data-theme="dark"] .theme-icon-sun {
    + 16px pill padding). Absolute so it
    does not push the centred masthead down; it goes into the flow below 860px
    where the header is no longer a fixed height. */
-.blog-back {
+.page-back {
   animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
   position: absolute;
   top: 110px;
@@ -866,7 +866,7 @@ html[data-theme="dark"] .theme-icon-sun {
   transition: transform 0.18s ease;
 }
 
-.blog-back svg {
+.page-back svg {
   display: block;
   width: 100%;
   height: 100%;
@@ -877,11 +877,11 @@ html[data-theme="dark"] .theme-icon-sun {
   stroke-linejoin: round;
 }
 
-.blog-back:hover {
+.page-back:hover {
   transform: translateX(-4px);
 }
 
-.blog-wrap {
+.page-wrap {
   animation: pageIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both;
   max-width: 780px;
   margin: 0 auto;
@@ -1101,7 +1101,7 @@ ol.blog-list {
 @media (max-width: 860px) {
   /* Too narrow for one row: the nav wraps, so the bar grows and carries the
      rule as its own border instead of a line at a fixed height. */
-  .blog-bar {
+  .page-bar {
     height: auto;
     display: flex;
     flex-wrap: wrap;
@@ -1112,11 +1112,11 @@ ol.blog-list {
     border-bottom: 2.5px solid var(--line);
   }
 
-  .blog-rule {
+  .page-rule {
     display: none;
   }
 
-  .blog-bar .site-header {
+  .page-bar .site-header {
     display: flex;
     flex: 1;
     flex-wrap: wrap;
@@ -1125,20 +1125,20 @@ ol.blog-list {
     gap: 4px;
   }
 
-  .blog-bar .site-nav,
-  .blog-bar .site-nav-right {
+  .page-bar .site-nav,
+  .page-bar .site-nav-right {
     position: static;
     max-width: none;
     padding: 0;
     background: transparent;
   }
 
-  .blog-back {
+  .page-back {
     position: static;
     margin: 20px 20px -16px;
   }
 
-  .blog-wrap {
+  .page-wrap {
     padding: 40px 20px 64px;
   }
 }
@@ -1715,5 +1715,258 @@ html[data-theme="dark"] .j9-root {
   .j9-card,
   .j9-answer {
     box-shadow: none;
+  }
+}
+
+/* ===================================================================
+   Alligator (/alligator)
+   Crocodile dentist. The jaw is two absolutely positioned blocks with a
+   gap between them; losing translates the upper one down by --close so
+   its teeth meet the lower set.
+   =================================================================== */
+
+.game-title {
+  font-weight: 700;
+  font-size: clamp(38px, 7vw, 56px);
+  letter-spacing: -1px;
+  margin: 0;
+}
+
+.game-sub {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 14px 0 28px;
+  max-width: 54ch;
+}
+
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.teeth-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.stepper:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.teeth-count {
+  font-weight: 700;
+  font-size: 22px;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.game-start {
+  font-size: 16px;
+  padding: 11px 24px;
+  background: #6fb92c;
+  color: #151310;
+  border-color: #151310;
+}
+
+.game-status {
+  font-size: 16px;
+  color: var(--muted);
+  margin: 0 0 28px;
+  min-height: 1.5em;
+}
+
+/* ---- The alligator ---- */
+.gator {
+  /* How far the upper jaw travels to bite: the 42px resting gap between the
+     two rows of teeth, plus enough to mesh them. */
+  --close: 66px;
+  position: relative;
+  height: 380px;
+  max-width: 720px;
+}
+
+.gator-upper,
+.gator-lower {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #6fb92c;
+  border: 5px solid #151310;
+  box-shadow: 9px 9px 0 var(--shadow);
+}
+
+.gator-upper {
+  top: 0;
+  height: 150px;
+  border-radius: 70px 70px 16px 16px;
+  z-index: 2;
+  transition: transform 0.5s cubic-bezier(0.5, -0.1, 0.4, 1.3);
+}
+
+/* The bite. */
+.gator[data-status="lost"] .gator-upper {
+  transform: translateY(var(--close));
+}
+
+.gator-lower {
+  bottom: 0;
+  height: 120px;
+  border-radius: 16px 16px 70px 70px;
+}
+
+.gator-eyes {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 56px;
+}
+
+.gator-eye {
+  width: 52px;
+  height: 52px;
+  background: #6fb92c;
+  border: 5px solid #151310;
+  border-radius: 50% 50% 40% 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gator-nostrils {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 26px;
+}
+
+.gator-nostrils span {
+  width: 13px;
+  height: 10px;
+  background: #151310;
+  border-radius: 50%;
+}
+
+/* ---- Teeth ---- */
+.tooth-row {
+  position: absolute;
+  bottom: -48px;
+  left: 26px;
+  right: 26px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.tooth {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0;
+  background: #fff;
+  border: 4px solid #151310;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34, 1.4, 0.64, 1), background 0.18s;
+}
+
+.tooth:hover:not(:disabled) {
+  background: #fff8dc;
+}
+
+/* Pressed teeth ride up into the gum. */
+.tooth[data-down] {
+  transform: translateY(-44px);
+  cursor: default;
+}
+
+.tooth[data-trap] {
+  background: #e5372a;
+  transform: none;
+}
+
+.tooth:disabled {
+  cursor: default;
+}
+
+.tooth-row-lower {
+  bottom: auto;
+  top: -30px;
+  align-items: flex-end;
+}
+
+.tooth-static {
+  height: 30px;
+  border: 4px solid #151310;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .gator {
+    height: 300px;
+    --close: 52px;
+  }
+
+  .gator-upper {
+    height: 120px;
+  }
+
+  .gator-lower {
+    height: 92px;
+  }
+
+  .tooth-row {
+    left: 14px;
+    right: 14px;
+    gap: 4px;
+    bottom: -38px;
+  }
+
+  .tooth {
+    height: 38px;
+  }
+
+  .tooth[data-down] {
+    transform: translateY(-34px);
+  }
+
+  .tooth-row-lower {
+    /* The .tooth-row rule above sets `bottom`; leaving it set alongside `top`
+       stretches the row and drops the teeth to the wrong edge. */
+    bottom: auto;
+    top: -24px;
+  }
+
+  .tooth-static {
+    height: 24px;
   }
 }
