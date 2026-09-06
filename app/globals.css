@@ -1800,11 +1800,11 @@ html[data-theme="dark"] .j9-root {
 
 /* ---- The alligator ---- */
 .gator {
-  /* How far the upper jaw travels to bite: the resting gap between the tips of
-     the teeth and the lower jaw, plus a few px so they press into it. */
-  --close: 66px;
+  /* How far the upper jaw travels to bite: the resting gap between the two rows
+     of teeth (74px here, 62px on mobile), so the tips meet. */
+  --close: 76px;
   position: relative;
-  height: 380px;
+  height: 430px;
   max-width: 720px;
 }
 
@@ -1916,10 +1916,27 @@ html[data-theme="dark"] .j9-root {
   cursor: default;
 }
 
+/* The lower jaw's teeth point up, and sink downwards when pressed. */
+.tooth-row-lower {
+  bottom: auto;
+  top: -48px;
+  align-items: flex-end;
+}
+
+.tooth-up {
+  border-top: 4px solid #151310;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.tooth-up[data-down] {
+  transform: translateY(44px);
+}
+
 @media (max-width: 860px) {
   .gator {
-    height: 300px;
-    --close: 52px;
+    height: 340px;
+    --close: 62px;
   }
 
   .gator-upper {
@@ -1943,6 +1960,17 @@ html[data-theme="dark"] .j9-root {
 
   .tooth[data-down] {
     transform: translateY(-34px);
+  }
+
+  .tooth-up[data-down] {
+    transform: translateY(34px);
+  }
+
+  .tooth-row-lower {
+    /* The mobile .tooth-row rule above re-sets `bottom`, which would otherwise
+       stretch this row and drop its teeth below the jaw. */
+    bottom: auto;
+    top: -38px;
   }
 
 }

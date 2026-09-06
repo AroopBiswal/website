@@ -45,8 +45,24 @@ export default function Game() {
     setTrap(null);
   };
 
+  // Split across the two jaws, odd counts putting the extra one up top. Both
+  // rows are live and share one numbering, so the trap can be any of them.
   const teeth = Array.from({ length: count }, (_, i) => i);
+  const upperTeeth = teeth.slice(0, Math.ceil(count / 2));
+  const lowerTeeth = teeth.slice(Math.ceil(count / 2));
   const safeLeft = count - 1 - pressed.length;
+
+  const tooth = (i: number, upper: boolean) => (
+    <button
+      key={i}
+      className={`tooth${upper ? "" : " tooth-up"}`}
+      data-down={pressed.includes(i) ? "" : undefined}
+      data-trap={status === "lost" && i === trap ? "" : undefined}
+      disabled={status !== "playing" || pressed.includes(i)}
+      onClick={() => press(i)}
+      aria-label={`Tooth ${i + 1}`}
+    />
+  );
 
   return (
     <PageShell active="alligator">
@@ -108,24 +124,14 @@ export default function Game() {
             <span />
           </div>
 
-          <div className="tooth-row">
-            {teeth.map((i) => (
-              <button
-                key={i}
-                className="tooth"
-                data-down={pressed.includes(i) ? "" : undefined}
-                data-trap={status === "lost" && i === trap ? "" : undefined}
-                disabled={status !== "playing" || pressed.includes(i)}
-                onClick={() => press(i)}
-                aria-label={`Tooth ${i + 1}`}
-              />
-            ))}
-          </div>
+          <div className="tooth-row">{upperTeeth.map((i) => tooth(i, true))}</div>
         </div>
 
-        {/* No teeth on the lower jaw: the mouth holds exactly the number you
-            picked, all of them clickable, one of them the trap. */}
-        <div className="gator-lower" />
+        <div className="gator-lower">
+          <div className="tooth-row tooth-row-lower">
+            {lowerTeeth.map((i) => tooth(i, false))}
+          </div>
+        </div>
       </div>
     </PageShell>
   );
