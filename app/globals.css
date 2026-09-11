@@ -2471,3 +2471,157 @@ html[data-theme="dark"] .j9-root {
     height: 64px;
   }
 }
+
+/* Editing rows: caption field, up/down, delete, and a save bar that slides
+   up from the bottom while there is something to save. */
+.admin-status {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-notice {
+  margin: 0 0 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6fb92c;
+}
+
+.admin-row {
+  grid-template-columns: 120px 1fr auto;
+}
+
+.admin-caption {
+  font-size: 15px;
+  padding: 8px 10px;
+}
+
+.admin-row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.admin-icon-btn svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.admin-icon-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.admin-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.admin-icon-danger {
+  color: #e5372a;
+  border-color: #e5372a;
+}
+
+.admin-chip-danger {
+  background: #e5372a;
+  color: #fff;
+  border-color: #151310;
+}
+
+.admin-savebar {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px 12px 20px;
+  background: var(--panel);
+  border: 2.5px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 5px 5px 0 var(--shadow);
+  transform: translate(-50%, 140%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s;
+}
+
+.admin-savebar.show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.admin-savebar-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-savebar .admin-sticker {
+  margin-top: 0;
+  align-self: auto;
+  padding: 10px 22px;
+  font-size: 15px;
+}
+
+.admin-sticker-green {
+  background: #6fb92c;
+  color: #151310;
+}
+
+@media (max-width: 860px) {
+  .admin-row {
+    grid-template-columns: 84px 1fr;
+  }
+
+  .admin-row-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .admin-savebar {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    transform: translateY(140%);
+    border-radius: 16px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    padding: 12px 14px;
+  }
+
+  .admin-savebar.show {
+    transform: translateY(0);
+  }
+
+  .admin-savebar-text {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-savebar,
+  .admin-icon-btn {
+    transition: none;
+  }
+}

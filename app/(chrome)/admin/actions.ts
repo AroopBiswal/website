@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { checkPassword, endSession, requireAdmin, startSession } from "@/lib/admin-auth";
-import { recordUploads } from "@/lib/photos";
+import { deletePhoto, recordUploads, savePhotos } from "@/lib/photos";
 import type { Photo, PhotoEdit } from "@/lib/photos-shared";
 
 export type LoginState = { error: string | null };
@@ -33,6 +33,22 @@ export async function logout(): Promise<void> {
 export async function recordUploadsAction(items: PhotoEdit[]): Promise<Photo[]> {
   await requireAdmin();
   const photos = await recordUploads(items);
+  revalidatePath("/photos");
+  return photos;
+}
+
+/** Writes the order and captions the admin has arranged. */
+export async function savePhotosAction(edits: PhotoEdit[]): Promise<Photo[]> {
+  await requireAdmin();
+  const photos = await savePhotos(edits);
+  revalidatePath("/photos");
+  return photos;
+}
+
+/** Removes the file from the store and the row from the manifest. */
+export async function deletePhotoAction(pathname: string): Promise<Photo[]> {
+  await requireAdmin();
+  const photos = await deletePhoto(pathname);
   revalidatePath("/photos");
   return photos;
 }
