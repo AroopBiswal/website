@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import type { Photo } from "@/lib/photos";
-
-/** A photo whose size is unknown reserves a landscape box until it loads. */
-export function photoSize(p: Pick<Photo, "width" | "height">) {
-  return p.width > 0 && p.height > 0 ? { width: p.width, height: p.height } : { width: 1600, height: 1200 };
-}
+import { LOCAL_URL_PREFIX, photoSize, type Photo } from "@/lib/photos-shared";
 
 /**
  * The grid of photos plus a lightbox. The grid is CSS multi-column, so each
@@ -54,7 +49,7 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
                 {...photoSize(p)}
                 sizes="(max-width: 860px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="photo-img"
-                unoptimized={p.url.startsWith("/photos-local/")}
+                unoptimized={p.url.startsWith(LOCAL_URL_PREFIX)}
               />
             </button>
             {p.caption && <figcaption className="photo-caption">{p.caption}</figcaption>}
@@ -79,7 +74,7 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
               {...photoSize(current)}
               sizes="100vw"
               className="photo-lightbox-img"
-              unoptimized={current.url.startsWith("/photos-local/")}
+              unoptimized={current.url.startsWith(LOCAL_URL_PREFIX)}
               priority
             />
             <figcaption className="photo-lightbox-caption">

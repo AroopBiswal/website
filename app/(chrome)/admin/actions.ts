@@ -1,7 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { checkPassword, endSession, startSession } from "@/lib/admin-auth";
+import { revalidatePath } from "next/cache";
+import { checkPassword, endSession, requireAdmin, startSession } from "@/lib/admin-auth";
+import { recordUploads } from "@/lib/photos";
+import type { Photo, PhotoEdit } from "@/lib/photos-shared";
 
 export type LoginState = { error: string | null };
 
@@ -20,4 +23,16 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
 export async function logout(): Promise<void> {
   await endSession();
   redirect("/admin");
+}
+
+/**
+ * Files a batch the browser has just uploaded. Every write to the gallery
+ * ends by revalidating /photos, which is what lets the page stay cached
+ * between edits and still show a change within seconds.
+ */
+export async function recordUploadsAction(items: PhotoEdit[]): Promise<Photo[]> {
+  await requireAdmin();
+  const photos = await recordUploads(items);
+  revalidatePath("/photos");
+  return photos;
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { isAdmin, isAdminConfigured } from "@/lib/admin-auth";
 import { getPhotos, storeMode } from "@/lib/photos";
 import LoginForm from "./login-form";
+import AdminPanel from "./panel";
 import { logout } from "./actions";
 
 // Reads the session cookie, so it can never be static.
@@ -33,8 +34,19 @@ export default async function AdminPage() {
     );
   }
 
-  const photos = await getPhotos();
   const mode = storeMode();
+  if (mode === "off") {
+    return (
+      <>
+        <h1 className="blog-masthead">Admin</h1>
+        <p className="blog-empty">
+          No photo store is connected: set <code>BLOB_READ_WRITE_TOKEN</code> (connect a Blob store to the Vercel project) to turn uploads on.
+        </p>
+      </>
+    );
+  }
+
+  const photos = await getPhotos();
 
   return (
     <>
@@ -46,9 +58,7 @@ export default async function AdminPage() {
           </button>
         </form>
       </div>
-      <p className="admin-note">
-        {photos.length} photo{photos.length === 1 ? "" : "s"} in the {mode === "blob" ? "Blob store" : mode === "local" ? "local folder (.photos-local)" : "store, which is not configured"}.
-      </p>
+      <AdminPanel initial={photos} mode={mode} />
     </>
   );
 }

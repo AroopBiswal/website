@@ -2307,3 +2307,167 @@ html[data-theme="dark"] .j9-root {
     gap: 12px;
   }
 }
+
+/* The drop zone: dashed while idle, solid and tinted while a drag hovers. */
+.admin-drop {
+  border-style: dashed;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.admin-drop.dragging {
+  border-style: solid;
+  background: rgba(255, 201, 60, 0.18);
+}
+
+.admin-drop-text {
+  margin: 0 0 14px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.admin-drop-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-drop-actions .admin-sticker {
+  margin-top: 0;
+  align-self: auto;
+}
+
+.admin-sticker-blue {
+  background: #2e4bd8;
+  color: #fff;
+}
+
+.admin-queue {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0 0;
+  text-align: left;
+  border-top: 1.5px solid var(--line);
+}
+
+.admin-queue-row {
+  display: grid;
+  grid-template-columns: 1fr auto minmax(60px, auto) 28px;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1.5px solid var(--line);
+  font-size: 14px;
+}
+
+.admin-queue-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-queue-size,
+.admin-queue-status {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-queue-row.done .admin-queue-status {
+  color: #6fb92c;
+  font-weight: 600;
+}
+
+.admin-queue-row.failed .admin-queue-status {
+  color: #e5372a;
+  font-weight: 600;
+  white-space: normal;
+}
+
+.admin-queue-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* The photo list: a thumbnail and its details per row. */
+.admin-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 18px;
+  align-items: start;
+  background: var(--panel);
+  border: 2.5px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.admin-thumb {
+  display: block;
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1.5px solid var(--line);
+}
+
+.admin-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-row-caption {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.admin-row-meta {
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-muted {
+  color: var(--muted);
+  font-style: italic;
+}
+
+@media (max-width: 860px) {
+  .admin-queue-row {
+    grid-template-columns: 1fr auto 28px;
+  }
+
+  .admin-queue-size {
+    display: none;
+  }
+
+  .admin-row {
+    grid-template-columns: 84px 1fr;
+    gap: 12px;
+  }
+
+  .admin-thumb {
+    width: 84px;
+    height: 64px;
+  }
+}

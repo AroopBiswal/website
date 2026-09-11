@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { BlobNotFoundError, del, head, list, put } from "@vercel/blob";
+import { LOCAL_URL_PREFIX, PHOTO_PREFIX, type Photo, type PhotoEdit, type StoreMode } from "./photos-shared";
 
 /**
  * The photo gallery's data layer.
@@ -18,26 +19,11 @@ import { BlobNotFoundError, del, head, list, put } from "@vercel/blob";
  * store. In production a missing token means the gallery is simply empty.
  */
 
-export type Photo = {
-  /** The blob pathname, e.g. `photos/tahoe-a1b2c3.jpg`. Stable and unique. */
-  pathname: string;
-  /** The public URL the image is served from. */
-  url: string;
-  caption: string;
-  /** Intrinsic pixel size, or 0/0 when unknown (a dashboard upload). */
-  width: number;
-  height: number;
-  /** ISO timestamp. */
-  uploadedAt: string;
-};
+export * from "./photos-shared";
 
 type Manifest = { version: 1; photos: Photo[] };
 
-export const PHOTO_PREFIX = "photos/";
 const MANIFEST_PATH = "photos-manifest.json";
-
-/** Which store backs the gallery right now. */
-export type StoreMode = "blob" | "local" | "off";
 
 export function storeMode(): StoreMode {
   if (process.env.BLOB_READ_WRITE_TOKEN) return "blob";
@@ -105,7 +91,6 @@ const blobStore: Store = {
 /* ---- Local disk, development only ---- */
 
 export const LOCAL_DIR = path.join(process.cwd(), ".photos-local");
-export const LOCAL_URL_PREFIX = "/photos-local/";
 
 const localStore: Store = {
   async list(prefix) {
@@ -247,9 +232,6 @@ export async function getPhotos(): Promise<Photo[]> {
   return [...kept, ...extra];
 }
 
-/** What the admin is allowed to change about a photo. */
-export type PhotoEdit = Pick<Photo, "pathname" | "caption" | "width" | "height">;
-
 /**
  * Replaces the manifest with the given order and captions. Pathnames the
  * store does not hold are ignored; photos in the store but missing from the
@@ -296,9 +278,10 @@ export async function recordUploads(items: PhotoEdit[]): Promise<Photo[]> {
       height: Math.max(0, Math.floor(item.height)) || 0,
     });
   }
-  const next = [...added, ...manifest.photos];
-  await writeManifest(next);
-  return next;
+  await writeManifest([...added, ...manifest.photos]);
+  // The reconciled view, not the raw manifest: the admin shows the same
+  // list the gallery does.
+  return getPhotos();
 }
 
 /** Deletes the file and drops it from the manifest. */
@@ -306,7 +289,6 @@ export async function deletePhoto(pathname: string): Promise<Photo[]> {
   const current = await getPhotos();
   const target = current.find((p) => p.pathname === pathname);
   if (target) await store().remove(target.url);
-  const next = current.filter((p) => p.pathname !== pathname);
-  await writeManifest(next);
-  return next;
+  await writeManifest(current.filter((p) => p.pathname !== pathname));
+  return getPhotos();
 }
