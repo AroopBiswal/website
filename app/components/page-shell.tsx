@@ -8,15 +8,25 @@ import { ThemeToggle } from "./theme-toggle";
 import { SiteNav } from "./nav";
 
 /**
- * The chrome for pages that live outside the home page's scroll — the blog and
- * the alligator: a sticky bar carrying the site nav, the rule that slides
+ * The chrome for pages that live outside the home page's scroll — the blog,
+ * the photos, the alligator and the admin: a sticky bar carrying the site nav, the rule that slides
  * between its two positions on navigation, a back arrow to the landing page,
  * and the column the content sits in.
  */
 export default function PageShell({ children }: { children: ReactNode }) {
   useEyeTracking();
-  // One layout serves both routes, so which nav item is lit comes from the URL.
-  const active = usePathname().startsWith("/alligator") ? "alligator" : "blog";
+  // One layout serves every route in the group, so which nav item is lit
+  // comes from the URL. The admin page lights nothing: it has no nav item.
+  const pathname = usePathname();
+  const active = pathname.startsWith("/alligator")
+    ? "alligator"
+    : pathname.startsWith("/photos")
+      ? "photos"
+      : pathname.startsWith("/admin")
+        ? null
+        : "blog";
+  // The photo pages want more than the blog's reading column.
+  const wide = active === "photos" || active === null;
 
   return (
     <div className="page-root">
@@ -38,7 +48,7 @@ export default function PageShell({ children }: { children: ReactNode }) {
         </svg>
       </Link>
 
-      <main className="page-wrap">{children}</main>
+      <main className={`page-wrap${wide ? " page-wrap-wide" : ""}`}>{children}</main>
     </div>
   );
 }

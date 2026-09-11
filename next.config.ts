@@ -13,6 +13,11 @@ import type { NextConfig } from "next";
 const DASHBOARD = "https://bullandbear-dashboard.vercel.app";
 
 const nextConfig: NextConfig = {
+  images: {
+    // The photo gallery serves from a Vercel Blob store; next/image only
+    // optimizes hosts it has been told about.
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+  },
   async rewrites() {
     return [
       // The bare path needs its own rule. With `:path*` matching zero

@@ -27,8 +27,8 @@ export function SiteNav({
   go,
   toggle,
 }: {
-  /** Which item is lit: a section of the home page, or a page of its own. */
-  active: Tab | "blog" | "alligator";
+  /** Which item is lit: a section of the home page, a page of its own, or nothing (the admin). */
+  active: Tab | "blog" | "photos" | "alligator" | null;
   /** Supplied by the home page only; its absence switches the nav to links. */
   go?: (t: Tab) => void;
   /** The theme toggle, which each page owns. */
@@ -67,6 +67,9 @@ export function SiteNav({
         </a>
         <Link className={`navbtn${active === "blog" ? " active" : ""}`} href="/blog">
           Blog
+        </Link>
+        <Link className={`navbtn${active === "photos" ? " active" : ""}`} href="/photos">
+          Photos
         </Link>
         <Link className={`navbtn${active === "alligator" ? " active" : ""}`} href="/alligator">
           Alligator

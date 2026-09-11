@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local photo store used by the gallery in development (see lib/photos.ts)
+/.photos-local/
