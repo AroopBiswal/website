@@ -8,8 +8,8 @@ import Gallery from "./gallery";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Photos · Aroop Biswal",
-  description: "Photos from Aroop Biswal.",
+  title: "Photography · Aroop Biswal",
+  description: "Photography by Aroop Biswal.",
 };
 
 export default async function PhotosPage() {
@@ -17,7 +17,9 @@ export default async function PhotosPage() {
 
   return (
     <>
-      <h1 className="blog-masthead">Photos</h1>
+      <div className="panel-head photos-head">
+        <h1 className="panel-title">Photography</h1>
+      </div>
       {photos.length === 0 ? (
         <p className="blog-empty">No photos yet — the camera roll is on its way.</p>
       ) : (

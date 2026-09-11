@@ -56,7 +56,15 @@ async function send(file: File, mode: StoreMode, onProgress: (pct: number) => vo
   return { pathname: json.pathname };
 }
 
-const toEdit = (p: Photo): PhotoEdit => ({ pathname: p.pathname, caption: p.caption, width: p.width, height: p.height });
+const toEdit = (p: Photo): PhotoEdit => ({
+  pathname: p.pathname,
+  title: p.title,
+  caption: p.caption,
+  location: p.location,
+  date: p.date,
+  width: p.width,
+  height: p.height,
+});
 const fingerprint = (photos: Photo[]) => JSON.stringify(photos.map(toEdit));
 
 let nextId = 1;
@@ -81,14 +89,14 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
 
   const dirty = fingerprint(draft) !== fingerprint(saved);
 
-  /** Applies a fresh list from the server, carrying over unsaved captions. */
+  /** Applies a fresh list from the server, carrying over unsaved details. */
   const arrive = (photos: Photo[]) => {
     setSaved(photos);
     setDraft((d) => {
       const edited = new Map(d.map((p) => [p.pathname, p]));
       const merged = photos.map((p) => {
         const e = edited.get(p.pathname);
-        return e ? { ...p, caption: e.caption } : p;
+        return e ? { ...p, title: e.title, caption: e.caption, location: e.location, date: e.date } : p;
       });
       // Keep the draft's order for rows that were already here; newcomers
       // (fresh uploads) go to the front, where the server put them.
@@ -131,7 +139,7 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
           send(item.file, mode, (pct) => patch(item.id, { progress: pct })),
           measureFile(item.file),
         ]);
-        landed.push({ pathname, caption: "", ...size });
+        landed.push({ pathname, title: "", caption: "", location: "", date: "", ...size });
         patch(item.id, { status: "done", progress: 100 });
       } catch (e) {
         patch(item.id, { status: "failed", error: (e as Error).message });
@@ -150,8 +158,8 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
     setBusy(false);
   };
 
-  const setCaption = (pathname: string, caption: string) =>
-    setDraft((d) => d.map((p) => (p.pathname === pathname ? { ...p, caption } : p)));
+  const setField = (pathname: string, field: "title" | "caption" | "location" | "date", value: string) =>
+    setDraft((d) => d.map((p) => (p.pathname === pathname ? { ...p, [field]: value } : p)));
 
   const move = (index: number, dir: -1 | 1) =>
     setDraft((d) => {
@@ -275,15 +283,42 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
           <li key={p.pathname} className="admin-row">
             <Image src={p.url} alt="" {...photoSize(p)} sizes="120px" className="admin-thumb" unoptimized={p.url.startsWith(LOCAL_URL_PREFIX)} />
             <div className="admin-row-body">
-              <input
-                className="admin-input admin-caption"
-                type="text"
-                value={p.caption}
-                placeholder="Caption (optional)"
-                maxLength={500}
-                aria-label={`Caption for ${p.pathname.slice(PHOTO_PREFIX.length)}`}
-                onChange={(e) => setCaption(p.pathname, e.target.value)}
-              />
+              <div className="admin-fields">
+                <input
+                  className="admin-input admin-field-title"
+                  type="text"
+                  value={p.title}
+                  placeholder="Title"
+                  maxLength={120}
+                  aria-label={`Title for ${p.pathname.slice(PHOTO_PREFIX.length)}`}
+                  onChange={(e) => setField(p.pathname, "title", e.target.value)}
+                />
+                <input
+                  className="admin-input"
+                  type="text"
+                  value={p.location}
+                  placeholder="Location"
+                  maxLength={120}
+                  aria-label={`Location for ${p.pathname.slice(PHOTO_PREFIX.length)}`}
+                  onChange={(e) => setField(p.pathname, "location", e.target.value)}
+                />
+                <input
+                  className="admin-input admin-field-date"
+                  type="month"
+                  value={p.date}
+                  aria-label={`Month taken for ${p.pathname.slice(PHOTO_PREFIX.length)}`}
+                  onChange={(e) => setField(p.pathname, "date", e.target.value)}
+                />
+                <textarea
+                  className="admin-input admin-field-caption"
+                  value={p.caption}
+                  placeholder="Description (optional) — shown under the title"
+                  maxLength={500}
+                  rows={3}
+                  aria-label={`Description for ${p.pathname.slice(PHOTO_PREFIX.length)}`}
+                  onChange={(e) => setField(p.pathname, "caption", e.target.value)}
+                />
+              </div>
               <div className="admin-row-meta">
                 {p.pathname.slice(PHOTO_PREFIX.length)}
                 {p.width > 0 && ` · ${p.width}×${p.height}`}
@@ -325,7 +360,7 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
       {mounted &&
         createPortal(
           <div className={`admin-savebar${dirty ? " show" : ""}`} aria-hidden={!dirty}>
-            <span className="admin-savebar-text">Unsaved changes to captions or order.</span>
+            <span className="admin-savebar-text">Unsaved changes to photo details or order.</span>
             <button type="button" className="chip-btn admin-chip" onClick={() => setDraft(saved)} disabled={saving} tabIndex={dirty ? 0 : -1}>
               Discard
             </button>

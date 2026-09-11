@@ -117,7 +117,7 @@ app/
       blocks.tsx       # Notion blocks -> JSX
     photos/
       page.tsx         # /photos gallery (ISR, revalidated by the admin)
-      gallery.tsx      # Grid + <dialog> lightbox — client component
+      gallery.tsx      # One-photo-per-row feed + <dialog> lightbox — client component
     admin/
       page.tsx         # /admin: config check -> login form -> panel (force-dynamic)
       actions.ts       # Server actions: login/logout, record uploads, save, delete
@@ -237,6 +237,23 @@ routes on purpose.
 Notion's file URLs expire after an hour, so a baked page would have to re-download every
 photo on every build; over `public/` because every new photo would be a commit; over
 Cloudinary/R2 because the site is already on Vercel and Blob needs no extra account.
+
+**What a photo carries, and how it shows.** Each manifest row holds `title`, `caption`,
+`location` and `date` (`"YYYY-MM"`) beside its size. `/photos` is a **feed, not a grid**
+(from a user mockup): a centred "Photography" heading in the `.panel-title` style, then one
+photo per row at the column's full width in a thin ink frame (1.5px, 8px radius), with the
+title and caption under it on the left and `LOCATION · MON YYYY` in tracked capitals on the
+right. `photoPlace()`/`formatMonth()` in `lib/photos-shared.ts` build that line with
+hand-rolled month names, never `Intl`. A portrait frame is held to the viewport height via
+an inline `--ratio` custom property so it never runs for two screens. All four fields are
+edited per row in `/admin` (title, location, a native month input, and a textarea labelled
+**Description**, which is stored as `caption` — the label changed, the key did not) and
+bounded by `tidyEdit()` on the server; manifests from before these fields read as empty.
+An empty description renders nothing on the page, never placeholder text. The frame border
+is hard-coded `#151310` in **both** themes at the user's request, not `var(--line)`.
+The mockup's heading said "Through the lens" — **the user explicitly did not want that as
+the title**, and the "PHOTOGRAPHY — 04" kicker was dropped because it would repeat the
+heading.
 
 **Two sources of truth, reconciled.** The store decides what *exists*; the manifest
 decides how it is *presented*. `getPhotos()` in `lib/photos.ts` lists the store, walks the
@@ -388,6 +405,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **Photos became a feed**: one large framed photo per row with title, caption, and location · month, from a user mockup, under a plain "Photography" heading (not the mockup's "Through the lens"). Photos gained `title`, `location` and `date` fields, edited in `/admin`. See the Photos section. |
 | Sep 2026 | **Work and Projects editorial restyle, tried and reverted.** Square borderless blocks, tracked uppercase labels, pill tags and a shared 960px column were built and committed, then reverted at the user's request back to the original bordered, rounded cards with the period pill. Also tried along the way and dropped: hairline borders, a blue top rule and a blue tint on the featured card, and a hover shadow. Do not re-propose the editorial look unprompted. |
 | Sep 2026 | **For Fun dropdown**: the Alligator nav item became a `NavMenu` (`nav.tsx`) labelled For Fun with a chevron that flips while open; Alligator is its first entry. Closes on outside click, Escape or a pick (a pathname effect was the first try, and the React lint rule against setState-in-effect sent it to an `onClick` on the list). On mobile the panel overlaps the theme toggle since the wrapped header has no room below. |
 | Sep 2026 | **Photos** at `/photos` with an **admin** at `/admin`, in four commits: gallery (Vercel Blob + JSON manifest reconciled in `lib/photos.ts`, ISR page, multi-column grid, `<dialog>` lightbox, local-disk store for dev), password gate (signed cookie keyed from `ADMIN_PASSWORD`), browser-to-Blob uploads (token exchange in `app/api/admin/upload`, local `POST` fallback), then captions/reorder/delete with a portalled save bar. In the nav it is the **Photography** pill between Blog and Alligator (it was briefly a camera icon by the toggle; the word won). `@vercel/blob` added. Needs a Blob store connected and `ADMIN_PASSWORD` set in Vercel before it does anything in production. See the Photos section for the design and its gotchas. |

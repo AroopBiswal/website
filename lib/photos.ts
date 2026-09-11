@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { BlobNotFoundError, del, head, list, put } from "@vercel/blob";
-import { LOCAL_URL_PREFIX, PHOTO_PREFIX, type Photo, type PhotoEdit, type StoreMode } from "./photos-shared";
+import { LOCAL_URL_PREFIX, PHOTO_PREFIX, tidyEdit, type Photo, type PhotoEdit, type StoreMode } from "./photos-shared";
 
 /**
  * The photo gallery's data layer.
@@ -187,12 +187,11 @@ async function readManifest(): Promise<Manifest> {
 }
 
 function normalizePhoto(p: Partial<Photo>): Photo {
+  // Older manifests predate title, location and date; they read as empty.
   return {
     pathname: String(p.pathname ?? ""),
     url: String(p.url ?? ""),
-    caption: typeof p.caption === "string" ? p.caption : "",
-    width: Number.isFinite(p.width) ? Math.max(0, Math.floor(p.width as number)) : 0,
-    height: Number.isFinite(p.height) ? Math.max(0, Math.floor(p.height as number)) : 0,
+    ...tidyEdit(p),
     uploadedAt: typeof p.uploadedAt === "string" ? p.uploadedAt : "",
   };
 }
@@ -227,7 +226,7 @@ export async function getPhotos(): Promise<Photo[]> {
   const extra = blobs
     .filter((b) => !seen.has(b.pathname))
     .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt))
-    .map<Photo>((b) => ({ ...b, caption: "", width: 0, height: 0 }));
+    .map<Photo>((b) => ({ ...b, title: "", caption: "", location: "", date: "", width: 0, height: 0 }));
 
   return [...kept, ...extra];
 }
@@ -246,12 +245,7 @@ export async function savePhotos(edits: PhotoEdit[]): Promise<Photo[]> {
     const p = byPath.get(e.pathname);
     if (!p || seen.has(e.pathname)) continue;
     seen.add(e.pathname);
-    next.push({
-      ...p,
-      caption: e.caption.trim().slice(0, 500),
-      width: Math.max(0, Math.floor(e.width)) || 0,
-      height: Math.max(0, Math.floor(e.height)) || 0,
-    });
+    next.push({ ...p, ...tidyEdit(e) });
   }
   for (const p of current) if (!seen.has(p.pathname)) next.push(p);
   await writeManifest(next);
@@ -271,12 +265,7 @@ export async function recordUploads(items: PhotoEdit[]): Promise<Photo[]> {
     if (manifest.photos.some((p) => p.pathname === item.pathname)) continue;
     const b = await store().stat(item.pathname);
     if (!b) continue;
-    added.push({
-      ...b,
-      caption: item.caption.trim().slice(0, 500),
-      width: Math.max(0, Math.floor(item.width)) || 0,
-      height: Math.max(0, Math.floor(item.height)) || 0,
-    });
+    added.push({ ...b, ...tidyEdit(item) });
   }
   await writeManifest([...added, ...manifest.photos]);
   // The reconciled view, not the raw manifest: the admin shows the same

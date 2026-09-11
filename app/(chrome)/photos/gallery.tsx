@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { LOCAL_URL_PREFIX, photoSize, type Photo } from "@/lib/photos-shared";
+import { LOCAL_URL_PREFIX, photoPlace, photoSize, type Photo } from "@/lib/photos-shared";
 
 /**
- * The grid of photos plus a lightbox. The grid is CSS multi-column, so each
- * photo keeps its own aspect ratio and the columns pack like a pinboard.
+ * The photos as a feed: one per row at the full width of the column, in a thin
+ * frame, with the title and caption beneath on the left and where and when on
+ * the right. A portrait frame is held to the height of the screen, and the
+ * text under it narrows with it. Clicking a photo opens the lightbox.
  */
 export default function Gallery({ photos }: { photos: Photo[] }) {
   const [open, setOpen] = useState<number | null>(null);
@@ -39,22 +41,35 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
 
   return (
     <>
-      <div className="photo-grid">
-        {photos.map((p, i) => (
-          <figure className="photo-card" key={p.pathname} style={{ "--tilt": i % 2 ? "1.2deg" : "-1.2deg" } as React.CSSProperties}>
-            <button type="button" className="photo-card-btn" onClick={() => setOpen(i)} aria-label={p.caption ? `Open photo: ${p.caption}` : "Open photo"}>
-              <Image
-                src={p.url}
-                alt={p.caption}
-                {...photoSize(p)}
-                sizes="(max-width: 860px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="photo-img"
-                unoptimized={p.url.startsWith(LOCAL_URL_PREFIX)}
-              />
-            </button>
-            {p.caption && <figcaption className="photo-caption">{p.caption}</figcaption>}
-          </figure>
-        ))}
+      <div className="photo-feed">
+        {photos.map((p, i) => {
+          const size = photoSize(p);
+          const place = photoPlace(p);
+          return (
+            <article className="photo-item" key={p.pathname} style={{ "--ratio": size.width / size.height } as CSSProperties}>
+              <button type="button" className="photo-frame" onClick={() => setOpen(i)} aria-label={`Open photo${p.title ? `: ${p.title}` : ""}`}>
+                <Image
+                  src={p.url}
+                  alt={p.title || p.caption}
+                  {...size}
+                  sizes="(max-width: 860px) 100vw, 1040px"
+                  className="photo-img"
+                  loading={i === 0 ? "eager" : "lazy"}
+                  unoptimized={p.url.startsWith(LOCAL_URL_PREFIX)}
+                />
+              </button>
+              {(p.title || p.caption || place) && (
+                <div className="photo-meta">
+                  <div className="photo-text">
+                    {p.title && <h2 className="photo-title">{p.title}</h2>}
+                    {p.caption && <p className="photo-caption">{p.caption}</p>}
+                  </div>
+                  {place && <span className="photo-place">{place}</span>}
+                </div>
+              )}
+            </article>
+          );
+        })}
       </div>
 
       <dialog
@@ -70,7 +85,7 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
           <figure className="photo-lightbox-figure">
             <Image
               src={current.url}
-              alt={current.caption}
+              alt={current.title || current.caption}
               {...photoSize(current)}
               sizes="100vw"
               className="photo-lightbox-img"
@@ -78,7 +93,11 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
               priority
             />
             <figcaption className="photo-lightbox-caption">
-              <span>{current.caption}</span>
+              <span>
+                {current.title && <strong>{current.title}</strong>}
+                {current.title && current.caption && " — "}
+                {current.caption}
+              </span>
               <span className="photo-lightbox-count">
                 {open! + 1} / {photos.length}
               </span>
