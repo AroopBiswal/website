@@ -1,11 +1,12 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEyeTracking } from "./googly";
 import { ThemeToggle } from "./theme-toggle";
 import { SiteNav } from "./nav";
+import { header } from "./header-state";
 
 /**
  * The chrome for pages that live outside the home page's scroll — the blog,
@@ -28,8 +29,25 @@ export default function PageShell({ children }: { children: ReactNode }) {
   // The photo pages want more than the blog's reading column.
   const wide = active === "photos" || active === null;
 
+  // Arriving from About, the rule is already below the nav: mark the root
+  // before the first paint so the arrival keyframes never start, the same
+  // stillness a hop between the blog and the photos has. Either way, the
+  // header is now in the "below" state for whoever comes next.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const was = header.below;
+    if (was && rootRef.current) rootRef.current.dataset.arrive = "still";
+    header.below = true;
+    // Restore on unmount so the effect is idempotent: StrictMode runs it
+    // twice in development, and the second run must not see the first
+    // run's write and take the still path when it came from the home page.
+    return () => {
+      header.below = was;
+    };
+  }, []);
+
   return (
-    <div className="page-root">
+    <div ref={rootRef} className="page-root">
       {/* The site's own nav, so these pages read as part of the site rather
           than somewhere else. */}
       <div className="page-bar">

@@ -186,8 +186,19 @@ a {
   top: 78px;
 }
 
-.site-root[data-panel="about"] .site-nav {
-  top: 12px;
+/* Landing straight on About from another page (site.tsx sets data-arrive
+   before the first paint): the header is already where About wants it, so
+   the arrival animation never runs on this mount, and the open transition is
+   held off until the first paint so nothing slides into place. */
+.site-root[data-arrive] .site-rule,
+.site-root[data-arrive] .site-nav,
+.site-root[data-arrive] .site-content {
+  animation: none;
+}
+
+.site-root[data-arrive="still"] .site-rule,
+.site-root[data-arrive="still"] .site-nav {
+  transition: none;
 }
 
 .site-root .site-content {
@@ -860,6 +871,15 @@ html[data-theme="dark"] .theme-icon-sun {
 
 .page-bar .theme-toggle {
   margin-left: auto;
+}
+
+/* Arriving from About (page-shell.tsx sets data-arrive before the first
+   paint): the rule is already below the nav, so nothing may move. */
+.page-root[data-arrive] .page-rule,
+.page-root[data-arrive] .page-bar .site-nav,
+.page-root[data-arrive] .page-back,
+.page-root[data-arrive] .page-wrap {
+  animation: none;
 }
 
 /* Back to the landing page: a thin stroked arrow sitting under the rule,

@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Job, Project, WorkData } from "@/lib/notion";
 import { ThemeToggle } from "./theme-toggle";
+import { header } from "./header-state";
 import { LINKS, SiteNav, TABS, type Tab } from "./nav";
 
 const INTERESTS: { label: string; bg: string; fg?: string }[] = [
@@ -54,6 +55,7 @@ function Eye({
 export default function Site({ work, projects }: { work: WorkData; projects: Project[] }) {
   const [tab, setTab] = useState<Tab>("home");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   /** About is a panel you switch to; everything else is a scroll target. */
   const goTo = (t: Tab, behavior: ScrollBehavior = "smooth") => {
@@ -65,13 +67,43 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
     }
   };
 
-  // Sync tab with URL hash so /#work etc. deep-link into the page.
+  // Sync tab with URL hash so /#work etc. deep-link into the page. The first
+  // read happens before paint: About Me on the blog or the photos is a link
+  // to /#about, and reading the hash after paint would show the home page
+  // for a frame and then slide the rule down — an arrival animation replayed
+  // between two states that were already the same. Landing straight on About
+  // marks the root so the header holds still, exactly as it does hopping
+  // between the blog and the photos. (A hard load of /#about still paints the
+  // server's home HTML first; only the in-app navigation is covered here.)
+  useLayoutEffect(() => {
+    const h = window.location.hash.slice(1);
+    if (!(TABS as readonly string[]).includes(h)) return;
+    const open = () => goTo(h as Tab, "auto");
+    open();
+    if (h !== "about" || !rootRef.current) return;
+    const root = rootRef.current;
+    root.dataset.arrive = "still";
+    // After the first paint, "settled": the arrival stays off for the life
+    // of this mount, but About's open/close transition works again.
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => {
+        root.dataset.arrive = "settled";
+      });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // Tell the next page where the header is, so leaving About for the blog
+  // does not replay the rule dropping below a nav it is already below.
+  useEffect(() => {
+    header.below = tab === "about";
+  }, [tab]);
+
   useEffect(() => {
     const fromHash = () => {
       const h = window.location.hash.slice(1);
       if ((TABS as readonly string[]).includes(h)) goTo(h as Tab, "auto");
     };
-    fromHash();
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
   }, []);
@@ -141,7 +173,7 @@ export default function Site({ work, projects }: { work: WorkData; projects: Pro
     // About is a panel rather than part of the scroll, so it gets the same
     // header treatment as the pages with their own routes: the rule drops
     // below the nav while it is open, and closes back up when you leave.
-    <div className="site-root" data-panel={tab === "about" ? "about" : undefined}>
+    <div ref={rootRef} className="site-root" data-panel={tab === "about" ? "about" : undefined}>
       <div className="site-rule" />
 
       <SiteNav

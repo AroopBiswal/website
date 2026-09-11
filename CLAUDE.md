@@ -38,8 +38,31 @@ Key traits:
 - Section headers are **centred** (label above title); there is no "Scroll ↓" hint
 - **The header has two states.** The rule runs *through* the nav on the scrolling home
   page and sits *below* it everywhere else — the blog, the alligator, and the About panel.
-  Moving between them slides the rule down (44px → 78px) and lifts the words, and reverses
-  coming back.
+  Moving between them slides the rule down (44px → 78px) and reverses coming back. The
+  nav itself rests at the same height (`top: 21px`) in both states; the arrival keyframe
+  only dips it 9px and settles. About once lifted the nav to 12px on top of that, which
+  made its header sit visibly higher than the blog's, so it no longer touches the nav.
+- **Landing straight on About from another page holds the header still.** About Me on
+  the blog/photos/alligator is a link to `/#about`, which remounts the home page. `Site`
+  reads the hash in a `useLayoutEffect` (before paint) and, for `#about`, sets
+  `data-arrive="still"` on `.site-root`, which turns the arrival keyframes off for the
+  life of that mount and the `top` transition off until the first paint; a double rAF then
+  flips it to `"settled"` so closing About still slides the rule up. Without this the rule
+  slid up (home arrival) and straight back down (About opening) — an animation replayed
+  between two identical states, the same bug the `(chrome)` route group fixed for
+  blog ↔ alligator. A hard load of `/#about` still paints the server's home HTML first,
+  so only in-app navigation is covered.
+- **And the reverse: leaving About for the blog/photos holds the page shell still.**
+  `app/components/header-state.ts` is one module-level flag, `header.below`, saying
+  where the header was last painted. `Site` sets it from `tab` (true while About is
+  open); `PageShell` reads it in a `useLayoutEffect` on mount and, if true, sets
+  `data-arrive="still"` on `.page-root`, which turns off the `ruleToBlog`/`navToBlog`/
+  `pageIn` keyframes for that mount; it then sets the flag true for whoever comes next.
+  The effect restores the previous value on unmount so it is idempotent: **StrictMode
+  runs mount effects twice in dev**, and without the restore the second run saw the
+  first run's write and held the header still on a plain home → blog hop too. A module
+  variable rather than storage on purpose: it survives client navigation and resets on a
+  hard load, which is exactly when a fresh arrival animation is right.
 - The two standalone routes animate that on arrival with keyframes. About is a panel on an
   already-mounted page, so it toggles `data-panel="about"` on `.site-root` and transitions
   **`top`** instead — the arrival keyframes hold a `transform` through their fill, which
