@@ -80,23 +80,38 @@ app/
     site.tsx           # THE site — client component: nav, theme, scroll sections + About panel, eye tracking
     googly.tsx         # <Eye> + useEyeTracking(), extracted so other pages get the eyes
     theme.ts           # useTheme() — reads html[data-theme], shared by every page
-    page-shell.tsx     # Sticky nav bar + rule + back arrow + column, for /blog and /alligator
+    page-shell.tsx     # Sticky nav bar + rule + back arrow + column, for every (chrome) route
     nav.tsx            # SiteNav — the header, buttons on the home page, links elsewhere
     theme-toggle.tsx   # <ThemeToggle /> — the sun/moon icon button, used by the site, the blog and the calculator
   (chrome)/            # Route group: shared PageShell layout, URLs unaffected
-    layout.tsx         # Keeps the header mounted across /blog <-> /alligator
+    layout.tsx         # Keeps the header mounted across /blog <-> /photos <-> /alligator
     alligator/
       page.tsx         # /alligator route shell (force-static, metadata)
       game.tsx         # The game — client component
     blog/
-    page.tsx           # Index: post list from Notion
-    [slug]/page.tsx    # One post, body rendered from Notion blocks
-    blocks.tsx         # Notion blocks -> JSX
+      page.tsx         # Index: post list from Notion
+      [slug]/page.tsx  # One post, body rendered from Notion blocks
+      blocks.tsx       # Notion blocks -> JSX
+    photos/
+      page.tsx         # /photos gallery (ISR, revalidated by the admin)
+      gallery.tsx      # Grid + <dialog> lightbox — client component
+    admin/
+      page.tsx         # /admin: config check -> login form -> panel (force-dynamic)
+      actions.ts       # Server actions: login/logout, record uploads, save, delete
+      login-form.tsx   # Password form (useActionState)
+      panel.tsx        # Drop zone, upload queue, editable rows, save bar — client component
+  api/admin/
+    upload/route.ts        # Blob client-upload token exchange (handleUpload), admin only
+    upload-local/route.ts  # Dev stand-in: writes the posted file to .photos-local/
+  photos-local/[...path]/route.ts  # Serves .photos-local/ in dev; 404 anywhere else
   j9calculator/
     page.tsx           # /j9calculator route shell (force-static, metadata)
     calculator.tsx     # The calculator UI — client component
 lib/
   notion.ts
+  photos.ts            # Photo store (Blob or local disk) + manifest reconcile — server only (imports fs)
+  photos-shared.ts     # Photo types, limits, name helpers — safe for client components
+  admin-auth.ts        # ADMIN_PASSWORD check + signed session cookie
   j9.ts                # End-date rule (pure, no React)
   j9-holidays.ts       # Holiday tables computed from the year
 scripts/
@@ -112,19 +127,21 @@ public/resume.pdf
 Work & Projects content lives in two Notion databases, fetched **at build time only** — static HTML, no ISR/runtime fetching (deploy = manual redeploy to pick up edits).
 - `lib/notion.ts` — `getWork()` → `{ featured, jobs }` (lowest `Order` = featured card), `getProjects()` → `Project[]` (`num` derived from `Order`). Uses `@notionhq/client` v5 (data-source API: resolves DB ID → data source via `databases.retrieve`, then `dataSources.query`). Throws a build-breaking error if env vars missing or a DB returns 0 rows (never ships an empty page).
 - `app/page.tsx` — async Server Component, `export const dynamic = "force-static"`, fetches both in parallel, passes as props.
-- **Env** (`.env.local`, git-ignored; also set in Vercel → Env Variables): `NOTION_TOKEN`, `NOTION_WORK_DB_ID` (`3a0e7c7c7bb480dc86a8da469436dfab`), `NOTION_PROJECTS_DB_ID` (`192d1b1ef9974e7496639f3efc7b4c4d`), `NOTION_BLOG_DB_ID` (`887b64c1aada49ee842921fc65b42ed2`). The integration must be shared with **all three** DBs — a database created through the Notion MCP connector is *not* automatically shared with the site's integration, and the build 404s until it is.
+- **Env** (`.env.local`, git-ignored; also set in Vercel → Env Variables): `NOTION_TOKEN`, `NOTION_WORK_DB_ID` (`3a0e7c7c7bb480dc86a8da469436dfab`), `NOTION_PROJECTS_DB_ID` (`192d1b1ef9974e7496639f3efc7b4c4d`), `NOTION_BLOG_DB_ID` (`887b64c1aada49ee842921fc65b42ed2`). The photo gallery adds `BLOB_READ_WRITE_TOKEN` and `ADMIN_PASSWORD` (see the Photos section). The integration must be shared with **all three** DBs — a database created through the Notion MCP connector is *not* automatically shared with the site's integration, and the build 404s until it is.
 - **Work DB** props: `Company` (title), `Role`, `Period`, `Blurb` (rich text), `Order` (number), **`Highlights` (rich text — one bullet per line, rendered under the featured card only)**. **Projects DB** props: `Title` (title), `Description` (rich text), `Tags` (multi-select), `Link` (url), `Date` (date — now shown under the project number), `Order` (number).
 - `Highlights` is read by `readLines()` (splits on newlines, strips a leading `-`/`•`/`*`) and `Date` by `readMonthYear()` (hand-rolled "Jun 2026", never `Intl`). **Both degrade quietly**: a missing property yields `[]` / `null` and the row just omits them, so the build never breaks on a database that has not grown the column yet.
 - **See an edit**: `npm run build` re-fetches; a refresh alone won't (baked). **All three fetchers are memoized for the life of the process** (`memo()` in `lib/notion.ts`), so in dev a Notion edit needs the dev server restarted, or a code edit that makes HMR re-evaluate `lib/notion.ts`. This is deliberate: without it every client-side navigation onto `/` waited ~400ms for four Notion calls, which read as a lag in the nav transition coming back from the blog. A rejected fetch is dropped from the cache so a transient Notion error does not stick.
 
 ## Pages outside the home scroll (`app/(chrome)/`)
 
-`/blog` and `/alligator` live in a route group sharing `app/(chrome)/layout.tsx`, which
-renders `PageShell`. **That grouping is load-bearing, not tidiness:** Next keeps a layout
+`/blog`, `/photos`, `/alligator` and `/admin` live in a route group sharing
+`app/(chrome)/layout.tsx`, which renders `PageShell`. **That grouping is load-bearing, not tidiness:** Next keeps a layout
 mounted across navigations inside it, so going blog → alligator leaves the header's DOM
 alone and its arrival animation cannot replay. Before the group, every hop replayed a
 movement between two states that were already identical. The shell reads the active nav
-item from `usePathname()` rather than a prop, since one layout now serves both.
+item from `usePathname()` rather than a prop, since one layout now serves them all;
+`/admin` lights nothing (it has no nav item), and the photo pages get `.page-wrap-wide`
+(1120px) instead of the blog's 780px reading column.
 
 ## Blog (`/blog`)
 
@@ -183,6 +200,94 @@ the trap drops the upper jaw. Pressing every safe tooth — `count - 1` of them 
 the jaw.
 - The trap tooth stays put and turns red when it fires — `.tooth[data-trap]` overrides the
   pressed transform, so it does not retract like the safe ones.
+
+## Photos (`/photos`) and the admin behind it (`/admin`)
+
+A photo gallery whose content changes **without a deploy**: sign in at `/admin`, drop
+photos in, write captions, reorder, save, and `/photos` shows it within seconds. This is
+the one part of the site that is not baked at build time, and it is confined to these two
+routes on purpose.
+
+**Where the bytes live.** A **Vercel Blob** store (public access). Images sit under
+`photos/` with a random suffix on the name; one small JSON file beside them,
+`photos-manifest.json`, holds the order and captions. Blob went in over Notion because
+Notion's file URLs expire after an hour, so a baked page would have to re-download every
+photo on every build; over `public/` because every new photo would be a commit; over
+Cloudinary/R2 because the site is already on Vercel and Blob needs no extra account.
+
+**Two sources of truth, reconciled.** The store decides what *exists*; the manifest
+decides how it is *presented*. `getPhotos()` in `lib/photos.ts` lists the store, walks the
+manifest in order, drops rows whose file is gone, and appends any file the manifest has
+not heard of (newest first, no caption, size 0×0). So a photo dropped in from the Vercel
+dashboard still shows up, one deleted there quietly leaves, and a corrupt manifest just
+loses captions rather than the gallery. URLs always come from the store, never from the
+manifest, so a hand-edited manifest cannot point the page anywhere else.
+
+**How it gets to the browser.** `/photos` is ISR (`revalidate = 3600`) and every admin
+write ends with `revalidatePath("/photos")`, so the page is cached between edits and still
+fresh seconds after one; the hour is only a backstop for dashboard uploads. `/admin` is
+`force-dynamic` since it reads the cookie. **The photo fetcher is deliberately not
+`memo()`d** like the Notion ones: a process-lifetime cache would make the admin's own
+edits invisible in dev.
+
+**Uploads go browser → Blob directly.** A Vercel function body is capped at 4.5MB and a
+phone photo is often bigger, so files never pass through the site. The browser calls
+`upload()` from `@vercel/blob/client`, which asks `app/api/admin/upload/route.ts` for a
+short-lived token; that route (`handleUpload`) hands one out only to a signed-in admin,
+only for an image type in `ALLOWED_TYPES`, only under `photos/`, capped at `MAX_BYTES`
+(50MB). The write token never leaves the server. Vercel's `onUploadCompleted` callback is
+**not used**: it cannot reach a dev server, and the browser already knows the result, so
+the panel files the batch itself through `recordUploadsAction`, which `head()`s each
+pathname before trusting it. The browser measures each image with `createImageBitmap`
+first so the manifest carries real dimensions; photos that arrive without one are measured
+on the next save.
+
+**Dev without a token.** `storeMode()` is `blob` when `BLOB_READ_WRITE_TOKEN` is set,
+`local` in development without it, and `off` in production without it (empty gallery,
+admin says so). Local mode keeps files in **`.photos-local/`** (git-ignored), served by
+`app/photos-local/[...path]/route.ts` and written by `app/api/admin/upload-local/route.ts`;
+both refuse to run in any other mode. The panel branches on the mode it is given: Blob
+client upload, or a plain `POST` of the file. Everything above — reconcile, captions,
+order, delete, revalidate — is exercised end to end against the local store, which is how
+this was built and tested before a real store existed.
+
+**The gate.** `lib/admin-auth.ts`. One password in `ADMIN_PASSWORD`; unset it and `/admin`
+says the admin is off. On success a cookie `admin-session` = `<expiry>.<hmac>` is set
+(httpOnly, SameSite=Lax, Secure in prod, 30 days), keyed from a hash of the password
+itself, so changing the password signs everyone out and nothing secret is stored outside
+the environment. Comparisons go through `timingSafeEqual` on hashes; a wrong guess sleeps
+800ms. Every server action and both upload routes call `requireAdmin()`/`isAdmin()`; the
+Blob token route checks it *before* handing the request to the SDK, so an anonymous call
+is a 401 rather than whatever the SDK says about tokens.
+
+**Setup on Vercel** (not yet done as of this writing): Storage → Create → Blob, public,
+connect it to the project with Production/Preview/Development so `BLOB_READ_WRITE_TOKEN`
+lands in the env; add `ADMIN_PASSWORD`; redeploy. Locally, `vercel env pull` or paste the
+token into `.env.local` to point dev at the real store. `next.config.ts` allows
+`*.public.blob.vercel-storage.com` for `next/image`; local-store URLs render `unoptimized`.
+
+**Gotchas learned here:**
+- **A client component must not import `lib/photos.ts`**: it imports `fs`, and Turbopack
+  fails the whole app with "Module not found: Can't resolve 'fs'". Types, limits and name
+  helpers live in `lib/photos-shared.ts` for that reason; `lib/photos.ts` re-exports them.
+- **`position: fixed` inside `.page-wrap` is not fixed to the viewport.** The arrival
+  keyframe holds a `transform` through its fill, which makes the column the containing
+  block. The admin save bar is `createPortal`led to `document.body` (after a mounted
+  check, to keep SSR identical).
+- The Blob CDN caches objects for at least 60s, so the manifest is fetched with a fresh
+  `?v=` query and `cache: "no-store"`, or a save would not show on the next render.
+- `.photo-lightbox-nav.prev/.next` need both classes named in the mobile media query too,
+  or the desktop centring rule (higher specificity) wins and the arrows stay mid-screen.
+- Every write returns `getPhotos()` (the reconciled view), not the raw manifest, so the
+  admin's list matches the gallery and never shows a dead row with an empty `src`.
+- Delete is a two-step in-page confirm rather than `window.confirm`, which blocks headless
+  and extension-driven browsers alike.
+
+**Testing without the Chrome extension.** The extension needed a browser pick that an
+unattended session cannot make. Headless Chrome driven over the DevTools Protocol from a
+dependency-free Node script (Node 24 has `WebSocket` built in; `DOM.setFileInputFiles`
+feeds the file input; `Emulation.setDeviceMetricsOverride` for 390px) covered sign-in,
+uploads, captions, reorder, save, delete and screenshots in both themes.
 
 ## Janine's end date calculator (`/j9calculator`)
 
@@ -252,7 +357,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 - Hero + featured Work card say **Google (SWE, Google Cloud, 2026—Now)** — came from the newer design mockup, not the old site (which said Meta). Google card has only a one-line blurb; add real bullets when available.
 - Contact links: aroopbiswal@gmail.com, github.com/AroopBiswal, linkedin.com/in/AroopBiswal, /resume.pdf
-- Nav has two external links, both `target="_blank"`: **GitHub** (github.com/AroopBiswal) in the left group, and **Trading** (`https://aroopbiswal.com/trading` — the absolute URL, not the `/trading` rewrite path) sitting just left of About Me in the right group.
+- Nav has two external links, both `target="_blank"`: **GitHub** (github.com/AroopBiswal) in the left group, and **Trading** (`https://aroopbiswal.com/trading` — the absolute URL, not the `/trading` rewrite path) in the right group. The right group runs Trading · Blog · Photos · Alligator · About Me · theme toggle.
 
 ---
 
@@ -260,6 +365,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **Photos** at `/photos` with an **admin** at `/admin`, in four commits: gallery (Vercel Blob + JSON manifest reconciled in `lib/photos.ts`, ISR page, multi-column grid, `<dialog>` lightbox, local-disk store for dev), password gate (signed cookie keyed from `ADMIN_PASSWORD`), browser-to-Blob uploads (token exchange in `app/api/admin/upload`, local `POST` fallback), then captions/reorder/delete with a portalled save bar. New nav item between Blog and Alligator. `@vercel/blob` added. Needs a Blob store connected and `ADMIN_PASSWORD` set in Vercel before it does anything in production. See the Photos section for the design and its gotchas. |
 | Sep 2026 | **Header states tidied**: the About panel now makes the same rule-drop move the blog and alligator make, via a `data-panel` attribute and a `top` transition. And `/blog` + `/alligator` moved into the `app/(chrome)/` route group so a shared layout keeps the header mounted between them — hopping between the two used to replay an arrival animation between two identical states. |
 | Sep 2026 | **Alligator** at `/alligator`: crocodile dentist with a chosen number of teeth and one random trap. Added a nav item for it, and pulled the blog's chrome out to `app/components/page-shell.tsx` (`.blog-root/-bar/-rule/-wrap/-back` renamed to `.page-*`) so the two routes share one shell rather than duplicating it. See the Alligator section above for the rule and the two layout gotchas. |
 | Sep 2026 | **Nav transition lag fixed** on `feature/nav-transition`: blog → home lagged while home → blog did not, because the dev server re-ran `getWork`/`getProjects` (four Notion calls, ~400ms) on every request while the blog memoized `getPosts`. All three fetchers now share `memo()` in `lib/notion.ts`; the home page's RSC payload dropped from ~430ms to ~7ms on repeat requests. Production was never affected (built once, `force-static`). Cost: a Notion edit needs a dev-server restart to show up. Same branch: a **thin stroked back arrow** (`.blog-back`, inline SVG, 56×24, 1.5px stroke) under the rule at the top left of every blog page, always to `/`. Absolute at desktop so the centred masthead stays put, in flow below 860px. Verified in headless Chrome at 1280px and in a 390px iframe. Also the **theme toggle became an icon**: `app/components/theme-toggle.tsx` renders a round button with a sun (while dark) or moon (while light), replacing the "Light"/"Dark" text pill on the site, the blog and the calculator; the calculator's private copy of the toggle logic went away with it. **Dev-server gotcha**: after a rewrite of `globals.css`, Turbopack kept serving the old stylesheet through a restart and a `touch`; only a real content change to the file made it recompile (append a comment, then delete it). It struck again after a branch switch + merge, and an unstyled inline SVG renders at 300×150, so **every inline SVG carries `width`/`height` attributes** as a floor; CSS still sizes them. **Nav hover**: an inactive `.navbtn` becomes a ghost of the active sticker on hover (panel fill, ink border, hard shadow, 2px lift with a 1.5° tilt) and on `:focus-visible` (no lift). Every item reserves a transparent 3px border with 3px less padding than the active pill, so the row never shifts; the hover is gated on `(hover: hover)` so a tap never sticks, and reduced motion drops the lift. **Trading** carries `.navbtn-ext`: an outward arrow (`.navbtn-ext-arrow`, tucked in the top-right corner) fades in with the hover to say it opens a new tab, plus an `.sr-only` note for screen readers; its 7px of extra right padding is reserved at rest so the width never changes. |
