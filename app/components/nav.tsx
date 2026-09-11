@@ -68,13 +68,13 @@ export function SiteNav({
         <Link className={`navbtn${active === "blog" ? " active" : ""}`} href="/blog">
           Blog
         </Link>
+        <Link className={`navbtn${active === "photos" ? " active" : ""}`} href="/photos">
+          Photography
+        </Link>
         <Link className={`navbtn${active === "alligator" ? " active" : ""}`} href="/alligator">
           Alligator
         </Link>
         {item("about", "About Me")}
-        <Link className={`navbtn${active === "photos" ? " active" : ""}`} href="/photos">
-          Photography
-        </Link>
         {toggle}
       </nav>
     </header>
