@@ -120,9 +120,9 @@ app/
       gallery.tsx      # One-photo-per-row feed + <dialog> lightbox — client component
     admin/
       page.tsx         # /admin: config check -> login form -> panel (force-dynamic)
-      actions.ts       # Server actions: login/logout, record uploads, save, delete
+      actions.ts       # Server actions: login/logout, record uploads, save, delete, refresh gallery
       login-form.tsx   # Password form (useActionState)
-      panel.tsx        # Drop zone, upload queue, editable rows, save bar — client component
+      panel.tsx        # Drop zone, upload queue, editable rows, Refresh live page + Save buttons, save bar — client component
   api/admin/
     upload/route.ts        # Blob client-upload token exchange (handleUpload), admin only
     upload-local/route.ts  # Dev stand-in: writes the posted file to .photos-local/
@@ -300,9 +300,16 @@ the environment. Comparisons go through `timingSafeEqual` on hashes; a wrong gue
 Blob token route checks it *before* handing the request to the SDK, so an anonymous call
 is a 401 rather than whatever the SDK says about tokens.
 
-**Setup on Vercel** (not yet done as of this writing): Storage → Create → Blob, public,
-connect it to the project with Production/Preview/Development so `BLOB_READ_WRITE_TOKEN`
-lands in the env; add `ADMIN_PASSWORD`; redeploy. Locally, `vercel env pull` or paste the
+**Setup on Vercel** (done Sep 2026): a public Blob store named `photography` (SFO1),
+connected to the project so `BLOB_READ_WRITE_TOKEN` is in the env, plus `ADMIN_PASSWORD`.
+To recreate: Storage → Create → Blob, public, connect it with Production/Preview/Development;
+add `ADMIN_PASSWORD`; redeploy. Saving in `/admin` is a permanent "Save changes" button
+beside the photo count (disabled until something changes) as well as the floating bar.
+Next to it, **"Refresh live page"** (`refreshGalleryAction`) calls `revalidatePath("/photos")`
+on demand, for changes made outside the admin such as deleting a file in the Vercel
+dashboard. It is deliberately not a redeploy: a revalidate takes seconds and costs no build
+minutes, and the page stays cached, so visitors never wait on Blob (about 2ms cached, one
+~25ms regeneration after a refresh, measured locally). Locally, `vercel env pull` or paste the
 token into `.env.local` to point dev at the real store. `next.config.ts` allows
 `*.public.blob.vercel-storage.com` for `next/image`; local-store URLs render `unoptimized`.
 
@@ -315,13 +322,33 @@ token into `.env.local` to point dev at the real store. `next.config.ts` allows
   block. The admin save bar is `createPortal`led to `document.body` (after a mounted
   check, to keep SSR identical).
 - The Blob CDN caches objects for at least 60s, so the manifest is fetched with a fresh
-  `?v=` query and `cache: "no-store"`, or a save would not show on the next render.
+  `?v=` query, or a save would not show on the next render.
+- **Never `cache: "no-store"` (or `next: { revalidate: 0 }`) on a fetch that `/photos`
+  runs.** The page is ISR; that option makes Next mark the route dynamic mid-revalidation,
+  which throws "Page changed from static to dynamic at runtime" and abandons the
+  regeneration, so the build-time copy is served forever. It shipped once: uploads landed
+  in Blob and showed in `/admin` (force-dynamic, unaffected) but the live page stayed on
+  "No photos yet", with `x-vercel-cache: STALE` and a climbing `age` on every request. The
+  first build did not trip it because the manifest did not exist yet, so the fetch never
+  ran. A redeploy would have hidden the bug by turning `/photos` dynamic, at the cost of a
+  Blob `list()` (an advanced operation, 2k/month free) per page view. A plain fetch with
+  the unique `?v=` URL is enough.
 - `.photo-lightbox-nav.prev/.next` need both classes named in the mobile media query too,
   or the desktop centring rule (higher specificity) wins and the arrows stay mid-screen.
 - Every write returns `getPhotos()` (the reconciled view), not the raw manifest, so the
   admin's list matches the gallery and never shows a dead row with an empty `src`.
 - Delete is a two-step in-page confirm rather than `window.confirm`, which blocks headless
   and extension-driven browsers alike.
+
+**Verifying ISR against a fake Blob store.** The Blob SDK honours `VERCEL_BLOB_API_URL`,
+so a ~30-line Node HTTP server answering `GET ?prefix=` (list), `GET ?url=` (head),
+`PUT ?pathname=` (put), `POST /delete` and serving `/files/<pathname>` lets
+`next build && next start` run the real Blob code path locally, with
+`BLOB_READ_WRITE_TOKEN=vercel_blob_rw_<anything>_x` (the SDK reads the store id from the
+fourth `_` segment). That is how the no-store bug was reproduced (page never showed the
+photo after a refresh) and the fix confirmed (MISS then HIT with the photo). Note the SDK
+uses undici's own `fetch`, so its list/head calls are never in Next's data cache; only
+the manifest fetch in `lib/photos.ts` goes through Next's patched `fetch`.
 
 **Testing without the Chrome extension.** The extension needed a browser pick that an
 unattended session cannot make. Headless Chrome driven over the DevTools Protocol from a

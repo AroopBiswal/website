@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { ALLOWED_TYPES, LOCAL_URL_PREFIX, MAX_BYTES, PHOTO_PREFIX, photoSize, safePhotoName, type Photo, type PhotoEdit, type StoreMode } from "@/lib/photos-shared";
-import { deletePhotoAction, recordUploadsAction, savePhotosAction } from "./actions";
+import { deletePhotoAction, recordUploadsAction, refreshGalleryAction, savePhotosAction } from "./actions";
 
 type Queued = {
   id: number;
@@ -77,6 +77,7 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
   const [queue, setQueue] = useState<Queued[]>([]);
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -156,6 +157,19 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
       }
     }
     setBusy(false);
+  };
+
+  const refresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setNotice(null);
+    try {
+      await refreshGalleryAction();
+      setNotice("Live page refreshed.");
+    } catch (e) {
+      setNotice(`Not refreshed: ${(e as Error).message}`);
+    }
+    setRefreshing(false);
   };
 
   const setField = (pathname: string, field: "title" | "caption" | "location" | "date", value: string) =>
@@ -271,11 +285,21 @@ export default function AdminPanel({ initial, mode }: { initial: Photo[]; mode: 
           {draft.length} photo{draft.length === 1 ? "" : "s"} in the{" "}
           {mode === "blob" ? "Blob store" : "local folder (.photos-local)"}. The gallery shows them in this order.
         </p>
-        {notice && (
-          <p className="admin-notice" role="status">
-            {notice}
-          </p>
-        )}
+        <div className="admin-status-actions">
+          {notice && (
+            <p className="admin-notice" role="status">
+              {notice}
+            </p>
+          )}
+          {/* Always visible, so saving never depends on noticing the bar that
+              slides up from the bottom. Disabled while nothing has changed. */}
+          <button type="button" className="chip-btn admin-chip admin-refresh" onClick={refresh} disabled={refreshing}>
+            {refreshing ? "Refreshing…" : "Refresh live page"}
+          </button>
+          <button type="button" className="sticker admin-sticker admin-sticker-green admin-save" onClick={save} disabled={!dirty || saving}>
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+        </div>
       </div>
 
       <ul className="admin-list">

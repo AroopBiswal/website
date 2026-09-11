@@ -2684,6 +2684,48 @@ html[data-theme="dark"] .admin-field-date {
   color: #151310;
 }
 
+/* The permanent save button sits at the right of the photo count. */
+.admin-status {
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-status .admin-note,
+.admin-status .admin-notice {
+  margin: 0;
+}
+
+.admin-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-save {
+  margin-top: 0;
+  align-self: auto;
+  padding: 10px 22px;
+  font-size: 15px;
+}
+
+.admin-save:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.admin-refresh:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+
+@media (max-width: 860px) {
+  .admin-status-actions {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 860px) {
   .admin-row {
     grid-template-columns: 84px 1fr;

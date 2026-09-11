@@ -68,8 +68,12 @@ const blobStore: Store = {
     const b = await this.stat(pathname);
     if (!b) return null;
     // The blob CDN caches for at least a minute; a fresh query string skips
-    // that so a save is visible on the very next render.
-    const res = await fetch(`${b.url}?v=${Date.now()}`, { cache: "no-store" });
+    // that so a save is visible on the very next render. Deliberately no
+    // `cache: "no-store"`: inside the ISR /photos page that option tells Next
+    // the route is dynamic, which throws during background revalidation
+    // ("Page changed from static to dynamic at runtime") and leaves the old
+    // page served forever. The unique URL already keeps every read fresh.
+    const res = await fetch(`${b.url}?v=${Date.now()}`);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Reading ${pathname} failed: ${res.status}`);
     return res.text();

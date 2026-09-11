@@ -52,3 +52,13 @@ export async function deletePhotoAction(pathname: string): Promise<Photo[]> {
   revalidatePath("/photos");
   return photos;
 }
+
+/**
+ * Rebuilds the public /photos page from the store right now, without a
+ * redeploy. Every save and upload already does this; the button is for
+ * changes made somewhere else, like deleting a file in the Vercel dashboard.
+ */
+export async function refreshGalleryAction(): Promise<void> {
+  await requireAdmin();
+  revalidatePath("/photos");
+}
