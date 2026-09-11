@@ -497,12 +497,16 @@ html[data-theme="dark"] .theme-icon-sun {
 }
 
 /* ---- Work ---- */
+/* ---- Work: an editorial grid. Hairline borders, square corners, tracked
+   small labels for role and period, and plenty of air; the featured job is
+   the same card at full width with a little more room. ---- */
+/* Work and Projects share one 960px column so the two sections line up. */
 .work-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 16px;
   padding: 6px 2px 10px;
-  max-width: 880px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -513,17 +517,95 @@ html[data-theme="dark"] .theme-icon-sun {
   font-family: var(--font-inter), sans-serif;
 }
 
+/* Soft blocks: no border, the panel fill alone lifts them off the cream
+   (and off the dark ground). Hover warms the fill a touch and lifts. */
 .work-card {
-  padding: 22px 24px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel);
+  padding: 28px 30px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   overflow: hidden;
-  transition: transform 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.work-card:hover {
-  transform: translateY(-3px);
+/* Hover warms the fill a touch and lifts the block. */
+.work-card:hover,
+.project-row:hover {
+  background: color-mix(in srgb, var(--panel) 92%, var(--ink));
+  transform: translateY(-2px);
+}
+
+.work-featured {
+  grid-column: 1 / -1;
+  padding: 36px 38px;
+  gap: 18px;
+}
+
+.work-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.work-who {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.work-company {
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.3px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.work-featured .work-company {
+  font-size: 28px;
+  letter-spacing: -0.6px;
+}
+
+.work-role,
+.work-period {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.work-period {
+  padding-top: 4px;
+}
+
+/* Every small label that can carry a number sets tabular figures, so
+   01–05 and 2023–24 line up in a column. */
+.work-role,
+.work-period,
+.proj-num,
+.proj-date,
+.proj-tag {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.work-blurb {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+}
+
+.work-featured .work-blurb {
+  font-size: 16px;
+  max-width: 60ch;
 }
 
 /* Bullets under the featured job — small dots in the text colour. */
@@ -553,48 +635,107 @@ html[data-theme="dark"] .theme-icon-sun {
   opacity: 0.8;
 }
 
-.proj-date {
-  font-weight: 500;
-  font-size: 11px;
-  color: var(--muted);
-  opacity: 0.75;
-  white-space: nowrap;
-}
-
-.period-pill {
-  font-family: var(--font-inter), sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--muted);
-  border: 1.5px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 14px;
-  white-space: nowrap;
-}
-
-/* ---- Projects ---- */
+/* ---- Projects: the same editorial treatment as Work. Each project is a
+   borderless block on the page, number and date as tracked small labels,
+   the title large, tags as quiet uppercase words, and an outward arrow that
+   appears on hover when the row opens a link. ---- */
 .project-list {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--line);
-  max-width: 1080px;
+  gap: 12px;
+  max-width: 960px;
   margin: 0 auto;
   width: 100%;
 }
 
 .project-row {
+  position: relative;
   display: grid;
-  grid-template-columns: 88px 1fr 340px 200px;
+  grid-template-columns: 88px 1fr 300px 170px;
   align-items: center;
-  gap: 24px;
-  padding: 26px 8px;
-  border-bottom: 1px solid var(--line);
-  transition: background 0.15s ease, padding-left 0.2s ease;
+  gap: 28px;
+  padding: 28px 36px 28px 30px;
+  background: var(--panel);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.project-row:hover {
-  background: var(--panel);
-  padding-left: 20px;
+.proj-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proj-num,
+.proj-date,
+.proj-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.proj-date {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.proj-title {
+  font-weight: 600;
+  font-size: clamp(22px, 3vw, 28px);
+  margin: 0;
+  color: var(--ink);
+  letter-spacing: -0.7px;
+  line-height: 1.15;
+}
+
+.proj-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+}
+
+.proj-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Tags are small pills with a faint ink wash, so the right column has some
+   shape without a border in sight. */
+.proj-tag {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  letter-spacing: 0.8px;
+  font-size: 10.5px;
+}
+
+/* A link row shows where it goes: an arrow tucked in the top-right corner
+   that rises into view on hover, the same mark the Trading nav item uses. */
+.proj-arrow {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--muted);
+  opacity: 0;
+  transform: translate(-3px, 3px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.project-row:hover .proj-arrow {
+  opacity: 1;
+  transform: none;
 }
 
 /* ---- About ---- */
@@ -759,12 +900,22 @@ html[data-theme="dark"] .theme-icon-sun {
 
   .project-row {
     grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 20px 8px;
+    gap: 10px;
+    padding: 22px 22px;
   }
 
-  .project-row .proj-tags {
-    justify-content: flex-start !important;
+  .proj-meta {
+    flex-direction: row;
+    gap: 14px;
+  }
+
+  .proj-tags {
+    justify-content: flex-start;
+  }
+
+  .proj-arrow {
+    opacity: 1;
+    transform: none;
   }
 
   .float-deco {
