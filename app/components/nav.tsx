@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 export const TABS = ["home", "work", "projects", "about", "contact"] as const;
@@ -71,12 +71,64 @@ export function SiteNav({
         <Link className={`navbtn${active === "photos" ? " active" : ""}`} href="/photos">
           Photography
         </Link>
-        <Link className={`navbtn${active === "alligator" ? " active" : ""}`} href="/alligator">
-          Alligator
-        </Link>
+        <NavMenu label="For Fun" lit={active === "alligator"}>
+          <Link className={`nav-menu-item${active === "alligator" ? " current" : ""}`} href="/alligator" role="menuitem">
+            Alligator
+          </Link>
+        </NavMenu>
         {item("about", "About Me")}
         {toggle}
       </nav>
     </header>
+  );
+}
+
+/**
+ * A nav item that opens a small menu beneath it — "For Fun" holds the toys,
+ * so each one does not need a word of its own in the row. The chevron says it
+ * drops down; it turns over while open. Closes on an outside click, Escape,
+ * or a pick.
+ */
+function NavMenu({ label, lit, children }: { label: string; lit: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        root.current?.querySelector("button")?.focus();
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className={`nav-menu${open ? " open" : ""}`} ref={root}>
+      <button
+        type="button"
+        className={`navbtn navbtn-menu${lit ? " active" : ""}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {label}
+        <svg className="navbtn-chevron" viewBox="0 0 12 12" width="10" height="10" aria-hidden focusable="false">
+          <path d="m2.5 4.5 3.5 3.5 3.5-3.5" />
+        </svg>
+      </button>
+      <div className="nav-menu-list" role="menu" aria-label={label} hidden={!open} onClick={() => setOpen(false)}>
+        {children}
+      </div>
+    </div>
   );
 }

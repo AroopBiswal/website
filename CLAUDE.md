@@ -59,7 +59,7 @@ Key traits:
 Accent palette (hard-coded, borders stay `#151310` in both themes): red `#E5372A`, blue `#2E4BD8`, yellow `#FFC93C`, green `#6FB92C`, orange `#F5821F`; interest chips use `#F59E0B` `#3B82F6` `#10B981` `#F43F5E` `#F97316`.
 
 ### Key CSS classes (`globals.css`)
-`.site-root` / `.site-rule` / `.site-header` / `.site-nav`(+`.site-nav-right`) / `.site-content` / `.scroll-view` / `.section`(+`.section-centered`) (shell) · `.navbtn`(+`.active`) · `.theme-toggle` (38px round icon button; `.theme-icon-sun`/`-moon` both rendered, `html[data-theme]` picks one in CSS so hydration never mismatches) · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` / `.job-bullets` · `.project-row` / `.proj-date` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
+`.site-root` / `.site-rule` / `.site-header` / `.site-nav`(+`.site-nav-right`) / `.site-content` / `.scroll-view` / `.section`(+`.section-centered`) (shell) · `.navbtn`(+`.active`) · `.nav-menu`/`.navbtn-menu`/`.navbtn-chevron`/`.nav-menu-list`/`.nav-menu-item`(+`.current`) (the For Fun dropdown) · `.theme-toggle` (38px round icon button; `.theme-icon-sun`/`-moon` both rendered, `html[data-theme]` picks one in CSS so hydration never mismatches) · `.eye`/`.pupil` · `.sticker` (big button w/ shadow, `--tilt` var controls hover rotation) · `.chip-btn` (small) · `.card` / `.work-card` / `.job-bullets` · `.project-row` / `.proj-date` · `.about-scroll`/`.about-section` (scroll-snap) · `.interest-chip` · `.dot`
 
 `.site-header` is a `display: contents` wrapper on desktop, so the two nav groups keep their
 absolute placement over the rule. Below 860px it becomes a real flex container: the free-standing
@@ -357,7 +357,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 - Hero + featured Work card say **Google (SWE, Google Cloud, 2026—Now)** — came from the newer design mockup, not the old site (which said Meta). Google card has only a one-line blurb; add real bullets when available.
 - Contact links: aroopbiswal@gmail.com, github.com/AroopBiswal, linkedin.com/in/AroopBiswal, /resume.pdf
-- Nav has two external links, both `target="_blank"`: **GitHub** (github.com/AroopBiswal) in the left group, and **Trading** (`https://aroopbiswal.com/trading` — the absolute URL, not the `/trading` rewrite path) in the right group. The right group runs Trading · Blog · **Photography** (a `.navbtn` link to `/photos`) · Alligator · About Me · theme toggle.
+- Nav has two external links, both `target="_blank"`: **GitHub** (github.com/AroopBiswal) in the left group, and **Trading** (`https://aroopbiswal.com/trading` — the absolute URL, not the `/trading` rewrite path) in the right group. The right group runs Trading · Blog · **Photography** (a `.navbtn` link to `/photos`) · **For Fun** (a dropdown, `NavMenu` in `nav.tsx`, holding Alligator; add more toys as `.nav-menu-item` links inside it) · About Me · theme toggle.
 
 ---
 
@@ -365,6 +365,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Sep 2026 | **For Fun dropdown**: the Alligator nav item became a `NavMenu` (`nav.tsx`) labelled For Fun with a chevron that flips while open; Alligator is its first entry. Closes on outside click, Escape or a pick (a pathname effect was the first try, and the React lint rule against setState-in-effect sent it to an `onClick` on the list). On mobile the panel overlaps the theme toggle since the wrapped header has no room below. |
 | Sep 2026 | **Photos** at `/photos` with an **admin** at `/admin`, in four commits: gallery (Vercel Blob + JSON manifest reconciled in `lib/photos.ts`, ISR page, multi-column grid, `<dialog>` lightbox, local-disk store for dev), password gate (signed cookie keyed from `ADMIN_PASSWORD`), browser-to-Blob uploads (token exchange in `app/api/admin/upload`, local `POST` fallback), then captions/reorder/delete with a portalled save bar. In the nav it is the **Photography** pill between Blog and Alligator (it was briefly a camera icon by the toggle; the word won). `@vercel/blob` added. Needs a Blob store connected and `ADMIN_PASSWORD` set in Vercel before it does anything in production. See the Photos section for the design and its gotchas. |
 | Sep 2026 | **Header states tidied**: the About panel now makes the same rule-drop move the blog and alligator make, via a `data-panel` attribute and a `top` transition. And `/blog` + `/alligator` moved into the `app/(chrome)/` route group so a shared layout keeps the header mounted between them — hopping between the two used to replay an arrival animation between two identical states. |
 | Sep 2026 | **Alligator** at `/alligator`: crocodile dentist with a chosen number of teeth and one random trap. Added a nav item for it, and pulled the blog's chrome out to `app/components/page-shell.tsx` (`.blog-root/-bar/-rule/-wrap/-back` renamed to `.page-*`) so the two routes share one shell rather than duplicating it. See the Alligator section above for the rule and the two layout gotchas. |
