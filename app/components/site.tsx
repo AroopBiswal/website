@@ -296,15 +296,17 @@ function WorkPanel({ featured, jobs }: { featured: Job; jobs: Job[] }) {
       </div>
       <div style={{ width: "100%" }}>
         <div className="work-grid">
-          <div className="card work-card work-featured">
-            <div className="work-head">
-              <div className="work-who">
-                <h3 className="work-company">{featured.company}</h3>
-                <span className="work-role">{featured.role}</span>
+          <div className="card" style={{ gridColumn: "1 / -1", padding: "32px 34px", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <h3 style={{ fontWeight: 600, fontSize: 24, margin: 0, letterSpacing: "-0.3px" }}>{featured.company}</h3>
+                <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)" }}>{featured.role}</span>
               </div>
-              <span className="work-period">{featured.period}</span>
+              <span className="period-pill">{featured.period}</span>
             </div>
-            <p className="work-blurb">{featured.blurb}</p>
+            <p style={{ fontSize: 16, lineHeight: 1.45, margin: featured.highlights.length ? "0 0 18px" : 0, color: "var(--muted)" }}>
+              {featured.blurb}
+            </p>
             {featured.highlights.length > 0 && (
               <ul className="job-bullets">
                 {featured.highlights.map((line) => (
@@ -316,14 +318,14 @@ function WorkPanel({ featured, jobs }: { featured: Job; jobs: Job[] }) {
 
           {jobs.map((job) => (
             <div key={job.company} className="card work-card">
-              <div className="work-head">
-                <div className="work-who">
-                  <h3 className="work-company">{job.company}</h3>
-                  <span className="work-role">{job.role}</span>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <h3 style={{ fontWeight: 600, fontSize: 18, margin: 0, letterSpacing: "-0.2px" }}>{job.company}</h3>
+                  <span style={{ fontWeight: 500, fontSize: 13, color: "var(--muted)" }}>{job.role}</span>
                 </div>
-                <span className="work-period">{job.period}</span>
+                <span style={{ fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>{job.period}</span>
               </div>
-              <p className="work-blurb">{job.blurb}</p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>{job.blurb}</p>
             </div>
           ))}
         </div>
@@ -346,24 +348,22 @@ function ProjectsPanel({ projects }: { projects: Project[] }) {
           {projects.map((p) => {
             const inner = (
               <>
-                <div className="proj-meta">
-                  <span className="proj-num">{p.num}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: "var(--muted)", letterSpacing: 1 }}>{p.num}</span>
                   {p.date && <span className="proj-date">{p.date}</span>}
                 </div>
-                <h3 className="proj-title">{p.title}</h3>
-                <p className="proj-desc">{p.desc}</p>
-                <div className="proj-tags">
-                  {p.tags.map((tag) => (
-                    <span key={tag} className="proj-tag">
-                      {tag}
+                <h3 style={{ fontWeight: 600, fontSize: "clamp(22px, 3vw, 30px)", margin: 0, color: "var(--ink)", letterSpacing: "-0.8px", lineHeight: 1.1 }}>
+                  {p.title}
+                </h3>
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>{p.desc}</p>
+                <div className="proj-tags" style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+                  {p.tags.map((tag, i) => (
+                    <span key={tag} style={{ display: "inline-flex", gap: 6 }}>
+                      {i > 0 && <span style={{ color: "var(--muted)", fontSize: 11 }}>/</span>}
+                      <span style={{ fontWeight: 500, fontSize: 11, letterSpacing: "0.5px", textTransform: "uppercase", color: "var(--muted)" }}>{tag}</span>
                     </span>
                   ))}
                 </div>
-                {p.href && (
-                  <svg className="proj-arrow" viewBox="0 0 12 12" width="14" height="14" aria-hidden focusable="false">
-                    <path d="M3 9 9 3M4.5 3H9v4.5" />
-                  </svg>
-                )}
               </>
             );
             return p.href ? (
