@@ -68,13 +68,23 @@ export function SiteNav({
         <Link className={`navbtn${active === "blog" ? " active" : ""}`} href="/blog">
           Blog
         </Link>
-        <Link className={`navbtn${active === "photos" ? " active" : ""}`} href="/photos">
-          Photos
-        </Link>
         <Link className={`navbtn${active === "alligator" ? " active" : ""}`} href="/alligator">
           Alligator
         </Link>
         {item("about", "About Me")}
+        {/* The photography page: a camera beside the theme toggle rather than
+            a word in the row, so the row stays the site's sections. */}
+        <Link
+          className={`nav-icon${active === "photos" ? " active" : ""}`}
+          href="/photos"
+          aria-label="Photography"
+          title="Photography"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden focusable="false">
+            <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.4-2h5.2L16 7h2.5A1.5 1.5 0 0 1 20 8.5V17a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17Z" />
+            <circle cx="12" cy="12.5" r="3.2" />
+          </svg>
+        </Link>
         {toggle}
       </nav>
     </header>

@@ -362,7 +362,10 @@ a {
 
 /* A round icon button, the same 38px tall as the old "Light"/"Dark" pill.
    Both icons are rendered; the theme attribute on <html> picks which shows. */
-.theme-toggle {
+/* The round icon buttons at the end of the nav: the camera (a link to the
+   photography page) and the theme toggle share one look. */
+.theme-toggle,
+.nav-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -383,7 +386,19 @@ a {
   transform: rotate(-15deg);
 }
 
-.theme-icon {
+.nav-icon:hover {
+  transform: translateY(-2px) rotate(-6deg);
+}
+
+/* Lit like an active nav pill while its page is open. */
+.nav-icon.active {
+  background: #2e4bd8;
+  color: #fff;
+  border-color: #151310;
+}
+
+.theme-icon,
+.nav-icon svg {
   width: 20px;
   height: 20px;
   fill: none;
@@ -716,13 +731,15 @@ html[data-theme="dark"] .theme-icon-sun {
     height: 8px;
   }
 
-  .theme-toggle {
+  .theme-toggle,
+  .nav-icon {
     width: 32px;
     height: 32px;
     margin-left: 4px;
   }
 
-  .theme-icon {
+  .theme-icon,
+  .nav-icon svg {
     width: 17px;
     height: 17px;
   }
@@ -858,7 +875,7 @@ html[data-theme="dark"] .theme-icon-sun {
   animation: navToBlog 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.page-bar .theme-toggle {
+.page-bar .nav-icon {
   margin-left: auto;
 }
 
