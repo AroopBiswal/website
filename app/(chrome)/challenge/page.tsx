@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getChallenge } from "@/lib/challenge-notion";
@@ -9,6 +10,7 @@ import {
   dailyTotals,
   formatDay,
   formatMinutes,
+  improvements,
   bestDay,
   progress,
   runningAverages,
@@ -49,12 +51,20 @@ export default async function ChallengePage() {
   const data = await getChallenge();
   if (!data) return <p className="blog-empty">{copy.notConfigured}</p>;
 
-  const { players, rows, fetchedAt } = data;
+  const { players, rows, baselines, goals, fetchedAt } = data;
   const { entries, flags } = clean(rows);
   const board = standings(players, entries);
   const mockToday = process.env.NODE_ENV !== "production" && process.env.CHALLENGE_MOCK_TODAY;
   const prog = progress(mockToday || todayPacific(new Date()));
+  const better = improvements(board, baselines);
   const leaders = board.filter((s) => s.rank === 1).map((s) => s.player.name).join(", ");
+  // Bars are measured in goal-bar heights: every goal bar is 1, an average bar is its ratio to its own goal
+  // (capped at 3; no goal means 1). The tallest bar on the board fills the plot.
+  const ratio = (avg: number, goal: number) => (goal > 0 ? Math.min(avg / goal, 3) : 1);
+  const maxRatio = Math.max(
+    1,
+    ...board.map((s) => ratio(s.average ?? 0, goals.find((g) => g.player === s.player.name)?.minutes ?? 0)),
+  );
   const pot = BUY_IN * players.length;
 
   const raceSeries = players.map((p) => runningAverages(p.name, entries));
@@ -81,7 +91,9 @@ export default async function ChallengePage() {
       <section className="challenge-section">
         <h2 className="challenge-heading">{copy.leaderboardHeading}</h2>
         <ol className="challenge-board">
-          {board.map((s) => (
+          {board.map((s) => {
+            const goal = goals.find((g) => g.player === s.player.name)?.minutes;
+            return (
             <li key={s.player.name} className="card challenge-row">
               <span className="challenge-rank">{s.rank ?? copy.noValue}</span>
               <span className="challenge-name">
@@ -91,6 +103,7 @@ export default async function ChallengePage() {
               <span className="challenge-avg">
                 {s.average === null ? copy.noValue : formatMinutes(s.average)}
                 <small>{copy.average}</small>
+                {goal !== undefined && <small className="challenge-goal">{copy.goalLabel(formatMinutes(goal))}</small>}
               </span>
               <dl className="challenge-stats">
                 <div>
@@ -109,9 +122,20 @@ export default async function ChallengePage() {
                   <dt>{copy.instagram}</dt>
                   <dd>{s.days === 0 ? copy.noValue : formatMinutes(s.instagram)}</dd>
                 </div>
+                <div>
+                  <dt>{copy.underGoal}</dt>
+                  <dd>
+                    {s.average !== null && goal !== undefined && s.average <= goal ? (
+                      <span role="img" aria-label={copy.yes}>{copy.underGoalYes}</span>
+                    ) : (
+                      copy.noValue
+                    )}
+                  </dd>
+                </div>
               </dl>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 
@@ -140,13 +164,19 @@ export default async function ChallengePage() {
               <p className="challenge-key">
                 <span><i className="challenge-seg-tiktok" />{copy.tiktok}</span>
                 <span><i className="challenge-seg-instagram" />{copy.instagram}</span>
+                <span><i className="challenge-seg-goal" />{copy.goalKey}</span>
               </p>
               <div className="challenge-columns">
                 {board.map((s) => {
-                  const sum = s.tiktok + s.instagram;
+                  const goal = goals.find((g) => g.player === s.player.name)?.minutes ?? 0;
+                  const avgTik = s.days > 0 ? s.tiktok / s.days : 0;
+                  const avgIg = s.days > 0 ? s.instagram / s.days : 0;
+                  const avg = avgTik + avgIg;
+                  const avgUnits = avg > 0 ? ratio(avg, goal) : 0;
+                  const top = Math.max(avgUnits, goal > 0 ? 1 : 0);
                   return (
                     <div key={s.player.name} className="challenge-col">
-                      <span className="challenge-col-total">{sum === 0 ? copy.noValue : formatMinutes(sum)}</span>
+                      <span className="challenge-col-total">{avg > 0 ? formatMinutes(s.average ?? avg) : copy.noValue}</span>
                       <div className="challenge-plot">
                         {FACES.includes(s.player.name.toLowerCase()) && (
                           <Image
@@ -157,16 +187,26 @@ export default async function ChallengePage() {
                             height={48}
                           />
                         )}
-                        {sum > 0 && (
-                          <div className="challenge-vbar">
-                            <span className="challenge-seg-instagram" style={{ flexGrow: s.instagram }} />
-                            <span className="challenge-seg-tiktok" style={{ flexGrow: s.tiktok }} />
+                        {top > 0 && (
+                          <div className="challenge-pair" style={{ "--share": top / maxRatio } as CSSProperties}>
+                            {avg > 0 && (
+                              <div className="challenge-vbar" style={{ height: `${(avgUnits / top) * 100}%` }}>
+                                {avgIg > 0 && <span className="challenge-seg-instagram" style={{ flexGrow: avgIg }} />}
+                                {avgTik > 0 && <span className="challenge-seg-tiktok" style={{ flexGrow: avgTik }} />}
+                              </div>
+                            )}
+                            {goal > 0 && (
+                              <div className={`challenge-vbar challenge-seg-goal${s.days > 0 && avg <= goal ? " met" : ""}`} style={{ height: `${(1 / top) * 100}%` }}>
+                                <span className="challenge-target" aria-hidden="true">{copy.goalEmoji}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                       <span className="challenge-name challenge-col-name">{s.player.name}</span>
-                      <span className="challenge-col-app">{sum > 0 && <><i className="challenge-seg-tiktok" />{formatMinutes(s.tiktok)}</>}</span>
-                      <span className="challenge-col-app">{sum > 0 && <><i className="challenge-seg-instagram" />{formatMinutes(s.instagram)}</>}</span>
+                      <span className="challenge-col-app">{avg > 0 && <><i className="challenge-seg-tiktok" />{formatMinutes(avgTik)}</>}</span>
+                      <span className="challenge-col-app">{avg > 0 && <><i className="challenge-seg-instagram" />{formatMinutes(avgIg)}</>}</span>
+                      <span className="challenge-col-app">{goal > 0 && copy.goalLabel(formatMinutes(goal))}</span>
                     </div>
                   );
                 })}
@@ -197,6 +237,27 @@ export default async function ChallengePage() {
             </div>
           </section>
         </>
+      )}
+
+      {better.length > 0 && (
+        <section className="challenge-section">
+          <h2 className="challenge-heading">{copy.improvementHeading}</h2>
+          <p className="challenge-note">{copy.improvementNote}</p>
+          <ul className="challenge-improve">
+            {better.map((i) => (
+              <li key={i.player.name} className="card challenge-card">
+                <span className="challenge-name">
+                  <Swatch color={i.player.color} />
+                  {i.player.name}
+                </span>
+                <span className="challenge-change" data-better={i.change < 0}>
+                  {copy.changePercent(i.change)}
+                </span>
+                <span className="challenge-from">{copy.baselineToNow(formatMinutes(i.baseline), formatMinutes(i.average))}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <footer className="challenge-foot">

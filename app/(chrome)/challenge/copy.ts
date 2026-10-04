@@ -25,6 +25,22 @@ export const copy = {
   tiktok: "TikTok",
   instagram: "Instagram",
   noValue: "–",
+  goalKey: "Goal",
+  goalEmoji: "🎯",
+  underGoal: "Under goal?",
+  underGoalYes: "✅",
+  yes: "Yes",
+
+  goalLabel: (goal: string) => `Goal ${goal}`,
+
+  improvementHeading: "Improvement from baseline",
+  improvementNote: "How much we improved from before the challenge!",
+  baselineToNow: (from: string, to: string) => `${from} → ${to}`,
+  /** -0.42 -> "−42%", 0.12 -> "+12%"; a real minus sign. */
+  changePercent: (change: number) => {
+    const pct = Math.round(Math.abs(change) * 100);
+    return `${change < 0 ? "−" : pct > 0 ? "+" : ""}${pct}%`;
+  },
 
   raceHeading: "Running average",
   raceLabel: "Running average minutes per day, by player",
@@ -32,7 +48,7 @@ export const copy = {
   dailyLabel: "Total minutes per day, by player",
   chartHint: "Select a day to see each player's value.",
 
-  splitHeading: "TikTok vs Instagram",
+  splitHeading: "us compared to our goals!",
   funHeading: "our best days",
   bestDay: "Best day",
 

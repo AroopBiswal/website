@@ -2968,6 +2968,10 @@ html[data-theme="dark"] .admin-field-date {
   color: var(--muted);
 }
 
+.challenge-avg .challenge-goal {
+  margin-top: 4px;
+}
+
 .challenge-stats {
   grid-column: 1 / -1;
   margin: 10px 0 0;
@@ -2976,10 +2980,64 @@ html[data-theme="dark"] .admin-field-date {
   gap: 8px 12px;
 }
 
+.challenge-row .challenge-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* "Under goal?" sits in the last column, on the card's right side. */
+.challenge-row .challenge-stats > :last-child {
+  grid-column: -2;
+}
+
 .challenge-stats dd {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
+}
+
+/* ---- Improvement from baseline ---- */
+.challenge-note {
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.challenge-improve {
+  list-style: none;
+  margin: 0;
+  padding: 0 5px 5px 0;
+  display: grid;
+  gap: 16px;
+}
+
+.challenge-improve .challenge-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.challenge-change {
+  grid-row: span 2;
+  grid-column: 2;
+  font-family: var(--font-fredoka), sans-serif;
+  font-size: 30px;
+  line-height: 1;
+  padding: 4px 10px;
+  border: 2px solid #151310;
+  border-radius: 999px;
+  color: #151310;
+  background: #E5372A;
+}
+
+.challenge-change[data-better="true"] {
+  background: #6FB92C;
+}
+
+.challenge-from {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 /* ---- Charts ---- */
@@ -3133,8 +3191,10 @@ html[data-theme="dark"] .admin-field-date {
 }
 
 .challenge-plot {
+  --plot: 220px;
+  --face-space: 54px;
   align-self: stretch;
-  height: 220px;
+  height: var(--plot);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3156,21 +3216,64 @@ html[data-theme="dark"] .admin-field-date {
   margin-bottom: 6px;
 }
 
+/* The face rides on this row. Its height is its taller bar's share of the plot. */
+.challenge-pair {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: calc((var(--plot) - var(--face-space)) * var(--share));
+  min-height: 4px;
+}
+
 .challenge-vbar {
   display: flex;
   flex-direction: column;
-  /* Every bar is the same height: it shows the split, not the total. */
-  flex: 1;
-  width: min(100%, 56px);
+  flex: 0 1 32px;
+  min-width: 0;
+  min-height: 4px;
   border: 2px solid var(--line);
   border-bottom: 0;
   border-radius: 6px 6px 0 0;
   overflow: hidden;
 }
 
-.challenge-vbar span {
+.challenge-vbar > span:not(.challenge-target) {
   flex-basis: 0;
-  min-height: 0;
+  min-height: 3px;
+}
+
+/* A target, not data: hollow with a dashed edge. */
+.challenge-seg-goal {
+  background: var(--panel);
+  border: 2px dashed var(--line);
+}
+
+.challenge-vbar.challenge-seg-goal {
+  position: relative;
+  overflow: visible;
+  border-bottom: 0;
+}
+
+/* The target sits inside the top of the bar. */
+.challenge-target {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Goal met: the target bar fills in light green. */
+.challenge-vbar.challenge-seg-goal.met {
+  background: rgba(111, 185, 44, 0.35);
+}
+
+.challenge-key .challenge-seg-goal {
+  border-width: 1.5px;
 }
 
 .challenge-col .challenge-name {
@@ -3222,6 +3325,10 @@ html[data-theme="dark"] .admin-field-date {
 }
 
 @media (min-width: 860px) {
+  .challenge-improve {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .challenge-charts {
     grid-template-columns: 1fr 1fr;
     gap: 0 28px;
@@ -3235,8 +3342,13 @@ html[data-theme="dark"] .admin-field-date {
     grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 2fr);
   }
 
+  /* Fixed width so rows with and without a goal line up the same. */
+  .challenge-avg {
+    width: 110px;
+  }
+
   .challenge-row .challenge-stats {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .challenge-stats {

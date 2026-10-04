@@ -3,7 +3,7 @@
 // Not memoized, and no `cache: "no-store"`: /challenge is ISR, and either would
 // make Next mark the route dynamic mid-revalidation (see CLAUDE.md, Photos).
 
-import type { Player, RawRow } from "./challenge.ts";
+import { cleanBaselines, cleanGoals, type Baseline, type Goal, type Player, type RawRow } from "./challenge.ts";
 import { notion } from "./notion.ts";
 import { mockChallenge } from "./challenge-mock.ts";
 
@@ -13,6 +13,19 @@ const PROPS = {
   date: "Date",
   tiktok: "TikTok (min)",
   instagram: "Instagram (min)",
+} as const;
+
+// The optional Baseline table: one row per player, the week before the challenge.
+const BASELINE_PROPS = {
+  player: "Player",
+  tiktok: "TikTok (min)",
+  instagram: "Instagram (min)",
+} as const;
+
+// The optional Goals table: one row per player, average minutes per day.
+const GOAL_PROPS = {
+  player: "Player",
+  minutes: "Goal (min/day)",
 } as const;
 
 const EXPECTED_TYPES = {
@@ -52,7 +65,7 @@ export async function fetchAll<T>(query: (cursor?: string) => Promise<Page<T>>):
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export async function getChallenge(): Promise<{ players: Player[]; rows: RawRow[]; fetchedAt: string } | null> {
+export async function getChallenge(): Promise<{ players: Player[]; rows: RawRow[]; baselines: Baseline[]; goals: Goal[]; fetchedAt: string } | null> {
   // Development only: build and check the page without Notion.
   if (process.env.NODE_ENV !== "production" && process.env.CHALLENGE_MOCK) return mockChallenge(process.env.CHALLENGE_MOCK);
   const data_source_id = process.env.NOTION_CHALLENGE_DATA_SOURCE_ID;
@@ -94,5 +107,43 @@ export async function getChallenge(): Promise<{ players: Player[]; rows: RawRow[
     editedAt: p.last_edited_time,
   }));
 
-  return { players, rows, fetchedAt: new Date().toISOString() };
+  const [baselines, goals] = await Promise.all([getBaselines(players), getGoals(players)]);
+  return { players, rows, baselines, goals, fetchedAt: new Date().toISOString() };
+}
+
+/** Optional tables: an unset variable or any failure is a warning and no rows, never a broken page. */
+async function optionalRows<T>(envVar: string, what: string, toRow: (page: any) => T): Promise<T[]> {
+  const data_source_id = process.env[envVar];
+  if (!data_source_id) {
+    console.warn(`${envVar} is not set; /challenge will show no ${what}.`);
+    return [];
+  }
+  try {
+    const pages = await fetchAll<any>((start_cursor) =>
+      notion().dataSources.query({ data_source_id, start_cursor, page_size: 100 }) as Promise<Page<any>>,
+    );
+    return pages.map(toRow);
+  } catch (e) {
+    console.warn(`Could not read the challenge ${what}: ${e instanceof Error ? e.message : e}`);
+    return [];
+  }
+}
+
+const titleText = (prop: any): string | null => prop?.title?.map((t: any) => t.plain_text).join("") ?? null;
+
+async function getBaselines(players: Player[]): Promise<Baseline[]> {
+  const rows = await optionalRows("NOTION_CHALLENGE_BASELINE_DATA_SOURCE_ID", "baselines", (p) => ({
+    player: titleText(p.properties[BASELINE_PROPS.player]),
+    tiktok: p.properties[BASELINE_PROPS.tiktok]?.number ?? null,
+    instagram: p.properties[BASELINE_PROPS.instagram]?.number ?? null,
+  }));
+  return cleanBaselines(rows, players);
+}
+
+async function getGoals(players: Player[]): Promise<Goal[]> {
+  const rows = await optionalRows("NOTION_CHALLENGE_GOALS_DATA_SOURCE_ID", "goals", (p) => ({
+    player: titleText(p.properties[GOAL_PROPS.player]),
+    minutes: p.properties[GOAL_PROPS.minutes]?.number ?? null,
+  }));
+  return cleanGoals(rows, players);
 }
