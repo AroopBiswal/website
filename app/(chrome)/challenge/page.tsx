@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getChallenge } from "@/lib/challenge-notion";
@@ -28,6 +27,10 @@ export const metadata: Metadata = {
   description: copy.metaDescription,
   robots: { index: false, follow: false },
 };
+
+// Height in px of the tallest bar in the goals chart. Heights are set in px, not
+// nested percentages, which collapsed to nothing in some browsers.
+const BAR_MAX = 166;
 
 // Players with a photo at public/challenge/<name>.jpg, shown on top of their bar.
 const FACES = ["samar", "kayla", "audrey", "aroop"];
@@ -188,15 +191,15 @@ export default async function ChallengePage() {
                           />
                         )}
                         {top > 0 && (
-                          <div className="challenge-pair" style={{ "--share": top / maxRatio } as CSSProperties}>
+                          <div className="challenge-pair">
                             {avg > 0 && (
-                              <div className="challenge-vbar" style={{ height: `${(avgUnits / top) * 100}%` }}>
+                              <div className="challenge-vbar" style={{ height: (avgUnits / maxRatio) * BAR_MAX }}>
                                 {avgIg > 0 && <span className="challenge-seg-instagram" style={{ flexGrow: avgIg }} />}
                                 {avgTik > 0 && <span className="challenge-seg-tiktok" style={{ flexGrow: avgTik }} />}
                               </div>
                             )}
                             {goal > 0 && (
-                              <div className={`challenge-vbar challenge-seg-goal${s.days > 0 && avg <= goal ? " met" : ""}`} style={{ height: `${(1 / top) * 100}%` }}>
+                              <div className={`challenge-vbar challenge-seg-goal${s.days > 0 && avg <= goal ? " met" : ""}`} style={{ height: BAR_MAX / maxRatio }}>
                                 <span className="challenge-target" aria-hidden="true">{copy.goalEmoji}</span>
                               </div>
                             )}

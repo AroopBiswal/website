@@ -3191,10 +3191,8 @@ html[data-theme="dark"] .admin-field-date {
 }
 
 .challenge-plot {
-  --plot: 220px;
-  --face-space: 54px;
   align-self: stretch;
-  height: var(--plot);
+  height: 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3224,8 +3222,6 @@ html[data-theme="dark"] .admin-field-date {
   align-items: flex-end;
   justify-content: center;
   gap: 4px;
-  height: calc((var(--plot) - var(--face-space)) * var(--share));
-  min-height: 4px;
 }
 
 .challenge-vbar {

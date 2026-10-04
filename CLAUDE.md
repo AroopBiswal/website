@@ -394,6 +394,9 @@ average daily TikTok + Instagram minutes over the days each person logged wins.
   from a group photo), listed in `FACES` in `page.tsx`. A new player needs a file and a name
   added there; without one they simply get no face. Not checked with `fs` at runtime because
   `public/` is not on a Vercel function's filesystem.
+- **Goal-chart bar heights are inline px** (`BAR_MAX` in `page.tsx`), not percentages of a
+  `calc()`-sized flex parent: that version rendered in headless Chrome but collapsed every bar
+  to nothing in the user's browser.
 - **Charts stop at today** (Pacific), missing days are gaps, and there is no floating
   tooltip: tapping a day column selects it and a readout under the chart lists every player.
 - **Mock data for dev:** `CHALLENGE_MOCK=full` (or `empty`) and `CHALLENGE_MOCK_TODAY=2026-10-20`
