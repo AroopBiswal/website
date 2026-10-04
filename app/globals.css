@@ -3159,6 +3159,8 @@ html[data-theme="dark"] .admin-field-date {
 .challenge-vbar {
   display: flex;
   flex-direction: column;
+  /* Every bar is the same height: it shows the split, not the total. */
+  flex: 1;
   width: min(100%, 56px);
   border: 2px solid var(--line);
   border-bottom: 0;

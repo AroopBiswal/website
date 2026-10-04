@@ -55,7 +55,6 @@ export default async function ChallengePage() {
   const mockToday = process.env.NODE_ENV !== "production" && process.env.CHALLENGE_MOCK_TODAY;
   const prog = progress(mockToday || todayPacific(new Date()));
   const leaders = board.filter((s) => s.rank === 1).map((s) => s.player.name).join(", ");
-  const maxTotal = Math.max(1, ...board.map((s) => s.tiktok + s.instagram));
   const pot = BUY_IN * players.length;
 
   const raceSeries = players.map((p) => runningAverages(p.name, entries));
@@ -159,7 +158,7 @@ export default async function ChallengePage() {
                           />
                         )}
                         {sum > 0 && (
-                          <div className="challenge-vbar" style={{ height: `calc((100% - 54px) * ${sum / maxTotal})` }}>
+                          <div className="challenge-vbar">
                             <span className="challenge-seg-instagram" style={{ flexGrow: s.instagram }} />
                             <span className="challenge-seg-tiktok" style={{ flexGrow: s.tiktok }} />
                           </div>
