@@ -19,8 +19,8 @@ import {
 import { copy } from "./copy";
 import LineChart from "./charts";
 
-// Rows are logged in Notion without a deploy; five minutes is fresh enough.
-export const revalidate = 300;
+// Rows are logged in Notion without a deploy; a minute is fresh enough.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: copy.metaTitle,

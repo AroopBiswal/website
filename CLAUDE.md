@@ -376,7 +376,7 @@ average daily TikTok + Instagram minutes over the days each person logged wins.
 - **Players are not hardcoded.** They are the options of the `Player` select, colour
   included (Notion colour name mapped to hex in `COLORS`), so adding an option in Notion
   adds a player everywhere and the pot grows by `BUY_IN`. Marker shapes cycle by index.
-- **ISR, `revalidate = 300`**, not build-time like Work/Projects, and not `memo()`d. The
+- **ISR, `revalidate = 60`**, not build-time like Work/Projects, and not `memo()`d. The
   Photos rule applies: never `cache: "no-store"` on anything this page fetches.
 - **Env:** `NOTION_CHALLENGE_DATA_SOURCE_ID` (`13b19786-b7c1-4424-8551-081601298e52`, a
   data source id used directly, not a database id). Unset, the page shows a friendly
