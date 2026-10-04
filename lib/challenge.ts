@@ -33,11 +33,6 @@ export type Standing = {
   days: number;
 };
 
-/** Average minutes per day in the week before the challenge, one per player. */
-export type Baseline = { player: string; tiktok: number; instagram: number; total: number };
-/** One Baseline row from Notion, untrusted. */
-export type RawBaseline = { player: string | null; tiktok: number | null; instagram: number | null };
-
 /** A player's goal: average minutes per day, TikTok and Instagram combined. */
 export type Goal = { player: string; minutes: number };
 /** One Goals row from Notion, untrusted. */
@@ -122,23 +117,7 @@ export function standings(players: Player[], entries: Entry[]): Standing[] {
   return list;
 }
 
-/** Match rows to players by trimmed, case-insensitive name; skip anything unusable. */
-export function cleanBaselines(rows: RawBaseline[], players: Player[]): Baseline[] {
-  const out: Baseline[] = [];
-  for (const row of rows) {
-    const name = row.player?.trim().toLowerCase();
-    const player = players.find((p) => p.name.trim().toLowerCase() === name);
-    if (!player || (row.tiktok === null && row.instagram === null)) continue;
-    // Notion holds each app's total for the week before; everything else here is per day.
-    const tiktok = (row.tiktok ?? 0) / 7;
-    const instagram = (row.instagram ?? 0) / 7;
-    if (tiktok < 0 || tiktok > MAX_MINUTES || instagram < 0 || instagram > MAX_MINUTES) continue;
-    out.push({ player: player.name, tiktok, instagram, total: tiktok + instagram });
-  }
-  return out;
-}
-
-/** Match rows to players like cleanBaselines; skip empty numbers and anything outside (0, 1440]. */
+/** Match rows to players by trimmed, case-insensitive name; skip empty numbers and anything outside (0, 1440]. */
 export function cleanGoals(rows: RawGoal[], players: Player[]): Goal[] {
   const out: Goal[] = [];
   for (const row of rows) {
@@ -154,17 +133,6 @@ export function cleanGoals(rows: RawGoal[], players: Player[]): Goal[] {
 export function goalChange(average: number | null, goal: number | undefined): number | null {
   if (average === null || goal === undefined) return null;
   return (average - goal) / goal;
-}
-
-/** Change from baseline for players with both; negative = improved. Most improved first. */
-export function improvements(board: Standing[], baselines: Baseline[]) {
-  const out: { player: Player; baseline: number; average: number; change: number }[] = [];
-  for (const s of board) {
-    const base = baselines.find((b) => b.player === s.player.name);
-    if (!base || base.total <= 0 || s.average === null) continue;
-    out.push({ player: s.player, baseline: base.total, average: s.average, change: (s.average - base.total) / base.total });
-  }
-  return out.sort((a, b) => a.change - b.change || a.player.name.localeCompare(b.player.name));
 }
 
 /** Each day's total for one player, null where nothing was logged. */

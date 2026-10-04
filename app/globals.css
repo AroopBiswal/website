@@ -2995,51 +2995,6 @@ html[data-theme="dark"] .admin-field-date {
   font-weight: 600;
 }
 
-/* ---- Improvement from baseline ---- */
-.challenge-note {
-  margin: -6px 0 14px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.challenge-improve {
-  list-style: none;
-  margin: 0;
-  padding: 0 5px 5px 0;
-  display: grid;
-  gap: 16px;
-}
-
-.challenge-improve .challenge-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 4px 14px;
-}
-
-.challenge-change {
-  grid-row: span 2;
-  grid-column: 2;
-  font-family: var(--font-fredoka), sans-serif;
-  font-size: 30px;
-  line-height: 1;
-  padding: 4px 10px;
-  border: 2px solid #151310;
-  border-radius: 999px;
-  color: #151310;
-  background: #E5372A;
-}
-
-.challenge-change[data-better="true"] {
-  background: #6FB92C;
-}
-
-.challenge-from {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
 /* ---- Charts ---- */
 .challenge-charts {
   display: grid;
@@ -3321,10 +3276,6 @@ html[data-theme="dark"] .admin-field-date {
 }
 
 @media (min-width: 860px) {
-  .challenge-improve {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .challenge-charts {
     grid-template-columns: 1fr 1fr;
     gap: 0 28px;

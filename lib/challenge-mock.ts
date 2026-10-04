@@ -1,7 +1,7 @@
 // Deterministic fake data for building the page without Notion. Reached only
 // from getChallenge() in development, behind CHALLENGE_MOCK.
 
-import { days, type Baseline, type Goal, type Player, type RawRow } from "./challenge.ts";
+import { days, type Goal, type Player, type RawRow } from "./challenge.ts";
 
 const PLAYERS: Player[] = [
   { name: "Aroop", color: "#3B6FE0" },
@@ -18,14 +18,6 @@ const BASE = [
   [35, 50],
 ];
 
-// Baselines: higher than the averages above for three players, lower for Kayla.
-const BASELINES: Baseline[] = [
-  { player: "Aroop", tiktok: 80, instagram: 50, total: 130 },
-  { player: "Samar", tiktok: 40, instagram: 30, total: 70 },
-  { player: "Audrey", tiktok: 120, instagram: 90, total: 210 },
-  { player: "Kayla", tiktok: 30, instagram: 40, total: 70 },
-];
-
 // Goals for three players: Aroop (average 65) under, Samar (40) over, Audrey (115) close to on goal. Kayla has none.
 const GOALS: Goal[] = [
   { player: "Aroop", minutes: 90 },
@@ -34,7 +26,7 @@ const GOALS: Goal[] = [
 ];
 
 /** "empty" gives players with no rows; anything else gives the full month. */
-export function mockChallenge(mode: string): { players: Player[]; rows: RawRow[]; baselines: Baseline[]; goals: Goal[]; fetchedAt: string } {
+export function mockChallenge(mode: string): { players: Player[]; rows: RawRow[]; goals: Goal[]; fetchedAt: string } {
   const rows: RawRow[] = [];
   if (mode !== "empty") {
     const all = days();
@@ -52,5 +44,5 @@ export function mockChallenge(mode: string): { players: Player[]; rows: RawRow[]
     // One duplicate day: the later edit should win.
     rows.push({ player: "Aroop", date: all[3], tiktok: 5, instagram: 5, editedAt: "2026-10-09T00:00:00Z" });
   }
-  return { players: PLAYERS, rows, baselines: mode === "empty" ? [] : BASELINES, goals: mode === "empty" ? [] : GOALS, fetchedAt: new Date().toISOString() };
+  return { players: PLAYERS, rows, goals: mode === "empty" ? [] : GOALS, fetchedAt: new Date().toISOString() };
 }

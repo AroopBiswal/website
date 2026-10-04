@@ -9,7 +9,6 @@ import {
   dailyTotals,
   formatDay,
   formatMinutes,
-  improvements,
   bestDay,
   progress,
   runningAverages,
@@ -54,12 +53,11 @@ export default async function ChallengePage() {
   const data = await getChallenge();
   if (!data) return <p className="blog-empty">{copy.notConfigured}</p>;
 
-  const { players, rows, baselines, goals, fetchedAt } = data;
+  const { players, rows, goals, fetchedAt } = data;
   const { entries, flags } = clean(rows);
   const board = standings(players, entries);
   const mockToday = process.env.NODE_ENV !== "production" && process.env.CHALLENGE_MOCK_TODAY;
   const prog = progress(mockToday || todayPacific(new Date()));
-  const better = improvements(board, baselines);
   const leaders = board.filter((s) => s.rank === 1).map((s) => s.player.name).join(", ");
   // Bars are measured in goal-bar heights: every goal bar is 1, an average bar is its ratio to its own goal
   // (capped at 3; no goal means 1). The tallest bar on the board fills the plot.
@@ -240,27 +238,6 @@ export default async function ChallengePage() {
             </div>
           </section>
         </>
-      )}
-
-      {better.length > 0 && (
-        <section className="challenge-section">
-          <h2 className="challenge-heading">{copy.improvementHeading}</h2>
-          <p className="challenge-note">{copy.improvementNote}</p>
-          <ul className="challenge-improve">
-            {better.map((i) => (
-              <li key={i.player.name} className="card challenge-card">
-                <span className="challenge-name">
-                  <Swatch color={i.player.color} />
-                  {i.player.name}
-                </span>
-                <span className="challenge-change" data-better={i.change < 0}>
-                  {copy.changePercent(i.change)}
-                </span>
-                <span className="challenge-from">{copy.baselineToNow(formatMinutes(i.baseline), formatMinutes(i.average))}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
 
       <footer className="challenge-foot">

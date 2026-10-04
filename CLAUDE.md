@@ -401,21 +401,15 @@ average daily TikTok + Instagram minutes over the days each person logged wins.
   tooltip: tapping a day column selects it and a readout under the chart lists every player.
 - **Mock data for dev:** `CHALLENGE_MOCK=full` (or `empty`) and `CHALLENGE_MOCK_TODAY=2026-10-20`
   on `next dev`; both are ignored in production.
-- `npm run test:challenge` (79 assertions, same no-framework setup as j9);
+- `npm run test:challenge` (65 assertions, same no-framework setup as j9);
   `node --env-file=.env.local scripts/check-notion.ts` prints the cleaned rows and averages
   to compare against Notion.
-- **Baseline (optional).** A fifth Notion data source, "Baseline": one row per player, `Player`
-  (title, first name), `TikTok (min)`, `Instagram (min)` = each app's **total minutes for the week before**
-  the challenge; `cleanBaselines()` divides by 7, so everything downstream is per day. Env `NOTION_CHALLENGE_BASELINE_DATA_SOURCE_ID` (`c8dd2c11-2b19-4691-b2fc-9e9706f1ebc0`).
-  **Never breaks the page**: unset or a failed fetch is a `console.warn` and no baselines; rows
-  that match no player, are empty or over a full week are skipped, one empty number counts as 0.
-  The maths is `cleanBaselines()` / `improvements()` in `lib/challenge.ts` (tested); the page shows
-  an "Improvement from baseline" section only when `improvements()` is non-empty. Percent
-  formatting is `copy.changePercent` (real minus sign). Needs a dev-server restart for env changes.
-- **Goals (optional).** A sixth Notion data source, "Goals": one row per player, `Player` (title,
+- An "Improvement from baseline" section (a Baseline table of week-before totals) was built and
+  then removed at the user's request, code and all. The Notion table still exists; nothing reads it.
+- **Goals (optional).** A fifth Notion data source, "Goals": one row per player, `Player` (title,
   first name) and `Goal (min/day)` = the goal *average per day*, both apps combined (already per day,
-  never divided by 7). Env `NOTION_CHALLENGE_GOALS_DATA_SOURCE_ID` (`49a2d73d-574e-4b24-a64b-b15cfcae1b4b`). Same quiet rules as the baseline
-  (shared `optionalRows()` helper in `lib/challenge-notion.ts`); `cleanGoals()` skips unmatched, empty and
+  used as is). Env `NOTION_CHALLENGE_GOALS_DATA_SOURCE_ID` (`49a2d73d-574e-4b24-a64b-b15cfcae1b4b`). **Never breaks the page**: an unset variable or a failed fetch is a `console.warn` and no goals
+  (`optionalRows()` in `lib/challenge-notion.ts`); `cleanGoals()` skips unmatched, empty and
   outside-(0, 1440] rows. `goalChange()` is `(average - goal) / goal`; the leaderboard card shows `Goal 1h 0m`
   plus an "Under goal?" cell (✅ when average <= goal, else a dash) in the stats grid; the old percent pill is gone. `goalChange()` stays for `check-notion.ts`.
 - **Phase 2, planned, not built:** `/challenge/log` — pick a name, PIN, upload a Screen Time

@@ -4,10 +4,8 @@
 
 import {
   clean,
-  cleanBaselines,
   cleanGoals,
   goalChange,
-  improvements,
   dailyTotals,
   days,
   formatDay,
@@ -17,7 +15,6 @@ import {
   runningAverages,
   standings,
   todayPacific,
-  type Baseline,
   type Entry,
   type Player,
   type RawRow,
@@ -183,30 +180,6 @@ check("rounds", formatMinutes(59.6), "1h 0m");
 check("rounds down", formatMinutes(44.4), "44m");
 check("formatDay", formatDay("2026-10-02"), "Oct 2");
 check("formatDay november", formatDay("2026-11-02"), "Nov 2");
-
-// ------------------------------------------------------------- baselines
-
-group("cleanBaselines");
-const rb = (player: string | null, tiktok: number | null, instagram: number | null) => ({ player, tiktok, instagram });
-check("weekly totals become daily; matches case and whitespace", cleanBaselines([rb("  aNN ", 210, 140)], players), [{ player: "Ann", tiktok: 30, instagram: 20, total: 50 }]);
-check("one empty number is 0", cleanBaselines([rb("Bo", null, 140)], players), [{ player: "Bo", tiktok: 0, instagram: 20, total: 20 }]);
-check("both empty skipped", cleanBaselines([rb("Bo", null, null)], players), []);
-check("out of range skipped", cleanBaselines([rb("Bo", 10081, 5), rb("Cy", -1, 5)], players), []);
-check("a full week allowed", cleanBaselines([rb("Bo", 10080, 0)], players).length, 1);
-check("unknown name skipped", cleanBaselines([rb("Zed", 5, 5), rb(null, 5, 5)], players), []);
-
-group("improvements");
-const board = standings(players, [entry("Ann", "2026-10-03", 30, 0), entry("Bo", "2026-10-03", 60, 0), entry("Cy", "2026-10-03", 10, 0)]);
-const base = (player: string, total: number): Baseline => ({ player, tiktok: total, instagram: 0, total });
-const imp = improvements(board, [base("Ann", 100), base("Bo", 50), base("Cy", 20), base("Di", 100)]);
-check("percentage", imp.find((i) => i.player.name === "Ann")?.change, -0.7);
-check("sorted most improved first", imp.map((i) => i.player.name), ["Ann", "Cy", "Bo"]);
-check("worse is positive", imp.find((i) => i.player.name === "Bo")?.change, 0.2);
-check("carries baseline and average", imp[0].baseline + "," + imp[0].average, "100,30");
-check("no baseline is absent", improvements(board, [base("Ann", 100)]).map((i) => i.player.name), ["Ann"]);
-check("baseline total 0 is absent", improvements(board, [base("Ann", 0)]), []);
-check("nothing logged is absent (Di)", improvements(board, [base("Di", 100)]), []);
-check("name breaks a tie", improvements(board, [base("Bo", 120), base("Ann", 60)]).map((i) => i.player.name), ["Ann", "Bo"]);
 
 // ----------------------------------------------------------------- fetchAll
 
