@@ -132,20 +132,14 @@ export function runningAverages(player: string, entries: Entry[]): (number | nul
   });
 }
 
-/** A player's lowest-total day (earliest wins a tie) and longest run of consecutive days under 30 minutes. */
-export function funStats(player: string, entries: Entry[]): { best: Entry | null; streak: number } {
+/** A player's lowest-total day; the earliest wins a tie. */
+export function bestDay(player: string, entries: Entry[]): Entry | null {
   let best: Entry | null = null;
-  let streak = 0;
-  let run = 0;
-  const byDate = new Map<string, Entry>();
-  for (const e of entries) if (e.player === player) byDate.set(e.date, e);
-  for (const d of days()) {
-    const e = byDate.get(d);
-    if (e && (!best || e.total < best.total)) best = e;
-    run = e && e.total < 30 ? run + 1 : 0;
-    streak = Math.max(streak, run);
+  for (const e of entries) {
+    if (e.player !== player) continue;
+    if (!best || e.total < best.total || (e.total === best.total && e.date < best.date)) best = e;
   }
-  return { best, streak };
+  return best;
 }
 
 /** Today's date in Pacific time. Server-side only: this is the one use of Intl. */

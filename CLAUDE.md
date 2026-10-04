@@ -391,7 +391,7 @@ average daily TikTok + Instagram minutes over the days each person logged wins.
   tooltip: tapping a day column selects it and a readout under the chart lists every player.
 - **Mock data for dev:** `CHALLENGE_MOCK=full` (or `empty`) and `CHALLENGE_MOCK_TODAY=2026-10-20`
   on `next dev`; both are ignored in production.
-- `npm run test:challenge` (57 assertions, same no-framework setup as j9);
+- `npm run test:challenge` (54 assertions, same no-framework setup as j9);
   `node --env-file=.env.local scripts/check-notion.ts` prints the cleaned rows and averages
   to compare against Notion.
 - **Phase 2, planned, not built:** `/challenge/log` — pick a name, PIN, upload a Screen Time
@@ -474,7 +474,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
-| Oct 2026 | **No Doomscroll Challenge** at `/challenge`: unlisted ISR page reading a Notion daily log, with a leaderboard, two SVG line charts, an app split and fun stats. Players come from the Notion select, all copy lives in `copy.ts`. See its section. |
+| Oct 2026 | **No Doomscroll Challenge** at `/challenge`: unlisted ISR page reading a Notion daily log, with a leaderboard, two SVG line charts, an app split and each player's best day. Players come from the Notion select, all copy lives in `copy.ts`. See its section. |
 | Sep 2026 | **Photos became a feed**: one large framed photo per row with title, caption, and location · month, from a user mockup, under a plain "Photography" heading (not the mockup's "Through the lens"). Photos gained `title`, `location` and `date` fields, edited in `/admin`. See the Photos section. |
 | Sep 2026 | **Work and Projects editorial restyle, tried and reverted.** Square borderless blocks, tracked uppercase labels, pill tags and a shared 960px column were built and committed, then reverted at the user's request back to the original bordered, rounded cards with the period pill. Also tried along the way and dropped: hairline borders, a blue top rule and a blue tint on the featured card, and a hover shadow. Do not re-propose the editorial look unprompted. |
 | Sep 2026 | **For Fun dropdown**: the Alligator nav item became a `NavMenu` (`nav.tsx`) labelled For Fun with a chevron that flips while open; Alligator is its first entry. Closes on outside click, Escape or a pick (a pathname effect was the first try, and the React lint rule against setState-in-effect sent it to an `onClick` on the list). On mobile the panel overlaps the theme toggle since the wrapped header has no room below. |

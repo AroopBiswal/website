@@ -9,7 +9,7 @@ import {
   dailyTotals,
   formatDay,
   formatMinutes,
-  funStats,
+  bestDay,
   progress,
   runningAverages,
   standings,
@@ -179,7 +179,7 @@ export default async function ChallengePage() {
             <h2 className="challenge-heading">{copy.funHeading}</h2>
             <div className="challenge-fun">
               {players.map((p) => {
-                const { best, streak } = funStats(p.name, entries);
+                const best = bestDay(p.name, entries);
                 return (
                   <div key={p.name} className="card challenge-card">
                     <span className="challenge-name">
@@ -190,10 +190,6 @@ export default async function ChallengePage() {
                       <div>
                         <dt>{copy.bestDay}</dt>
                         <dd>{best ? `${formatDay(best.date)} · ${formatMinutes(best.total)}` : copy.noValue}</dd>
-                      </div>
-                      <div>
-                        <dt>{copy.streak}</dt>
-                        <dd>{copy.streakValue(streak)}</dd>
                       </div>
                     </dl>
                   </div>

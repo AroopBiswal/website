@@ -8,7 +8,7 @@ import {
   days,
   formatDay,
   formatMinutes,
-  funStats,
+  bestDay,
   progress,
   runningAverages,
   standings,
@@ -138,9 +138,9 @@ check("running averages", running.slice(0, 4), [60, 60, 45, 45]);
 check("running average null before first log", runningAverages("Ann", [entry("Ann", "2026-10-05", 10, 0)]).slice(0, 4), [null, null, 10, 10]);
 check("no entries: all null", dailyTotals("Nobody", mine).every((x) => x === null), true);
 
-// --------------------------------------------------------------- funStats
+// --------------------------------------------------------------- bestDay
 
-group("funStats");
+group("bestDay");
 const fun = [
   entry("Ann", "2026-10-03", 10, 10),
   entry("Ann", "2026-10-04", 5, 5),
@@ -149,12 +149,9 @@ const fun = [
   entry("Ann", "2026-10-08", 1, 1),
   entry("Bo", "2026-10-03", 1, 0),
 ];
-check("best day", funStats("Ann", fun).best?.date, "2026-10-08");
-check("streak stops at a high day", funStats("Ann", fun).streak, 2);
-check("an unlogged day breaks the run", funStats("Ann", fun.filter((e) => e.date !== "2026-10-04")).streak, 1);
-check("tie goes to the earlier day", funStats("Ann", [entry("Ann", "2026-10-10", 5, 0), entry("Ann", "2026-10-07", 5, 0)]).best?.date, "2026-10-07");
-check("30 minutes is not under 30", funStats("Ann", [entry("Ann", "2026-10-03", 30, 0)]).streak, 0);
-check("nothing logged", funStats("Zed", fun), { best: null, streak: 0 });
+check("best day", bestDay("Ann", fun)?.date, "2026-10-08");
+check("tie goes to the earlier day", bestDay("Ann", [entry("Ann", "2026-10-10", 5, 0), entry("Ann", "2026-10-07", 5, 0)])?.date, "2026-10-07");
+check("nothing logged", bestDay("Zed", fun), null);
 
 // ---------------------------------------------------------------- progress
 

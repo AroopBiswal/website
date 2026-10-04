@@ -35,8 +35,6 @@ export const copy = {
   splitHeading: "TikTok vs Instagram",
   funHeading: "our best days",
   bestDay: "Best day",
-  streak: "Longest streak under 30 minutes",
-  streakValue: (n: number) => (n === 1 ? "1 day" : `${n} days`),
 
   flagDuplicate: (player: string, date: string) => `${player} has more than one entry for ${date}; the latest is used.`,
   flagOutOfRange: (player: string, date: string) => `${player}'s entry for ${date} has an impossible value and was ignored.`,
