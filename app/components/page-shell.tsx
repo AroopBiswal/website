@@ -23,7 +23,7 @@ export default function PageShell({ children }: { children: ReactNode }) {
     ? "alligator"
     : pathname.startsWith("/photos")
       ? "photos"
-      : pathname.startsWith("/admin")
+      : pathname.startsWith("/admin") || pathname.startsWith("/challenge")
         ? null
         : "blog";
   // The photo pages want more than the blog's reading column.

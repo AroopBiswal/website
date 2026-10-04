@@ -118,6 +118,10 @@ app/
     photos/
       page.tsx         # /photos gallery (ISR, revalidated by the admin)
       gallery.tsx      # One-photo-per-row feed + <dialog> lightbox — client component
+    challenge/
+      page.tsx         # /challenge: unlisted screen-time leaderboard (ISR, Notion)
+      charts.tsx       # SVG line chart with tap-to-select readout — client component
+      copy.ts          # Every string on the page
     admin/
       page.tsx         # /admin: config check -> login form -> panel (force-dynamic)
       actions.ts       # Server actions: login/logout, record uploads, save, delete, refresh gallery
@@ -356,6 +360,44 @@ dependency-free Node script (Node 24 has `WebSocket` built in; `DOM.setFileInput
 feeds the file input; `Emulation.setDeviceMetricsOverride` for 390px) covered sign-in,
 uploads, captions, reorder, save, delete and screenshots in both themes.
 
+## No Doomscroll Challenge (`/challenge`)
+
+A screen-time leaderboard between friends, read live from a fourth Notion data source
+("Daily Log": one row per player per day). **Unlisted on purpose**: `robots: noindex`,
+first names only, no nav item (`PageShell` lights nothing for it, like `/admin`). Lowest
+average daily TikTok + Instagram minutes over the days each person logged wins.
+
+- **Structure.** `lib/challenge.ts` is pure (cleaning, duplicates, tied ranks, running
+  averages, day X of 29) and holds the window and buy-in as `START`/`END`/`BUY_IN`.
+  `lib/challenge-notion.ts` fetches; `app/(chrome)/challenge/page.tsx` renders;
+  `charts.tsx` is the only client component (plain SVG, no chart library).
+- **Every string is in `app/(chrome)/challenge/copy.ts`**, because the user writes his own
+  copy. Do not put literal text in the components.
+- **Players are not hardcoded.** They are the options of the `Player` select, colour
+  included (Notion colour name mapped to hex in `COLORS`), so adding an option in Notion
+  adds a player everywhere and the pot grows by `BUY_IN`. Marker shapes cycle by index.
+- **ISR, `revalidate = 300`**, not build-time like Work/Projects, and not `memo()`d. The
+  Photos rule applies: never `cache: "no-store"` on anything this page fetches.
+- **Env:** `NOTION_CHALLENGE_DATA_SOURCE_ID` (`13b19786-b7c1-4424-8551-081601298e52`, a
+  data source id used directly, not a database id). Unset, the page shows a friendly
+  message and the build still passes. Set but with a renamed property, `getChallenge()`
+  throws naming what is missing: property names live in one `PROPS` map and are checked
+  against the live schema on every fetch, since the database gets edited from a phone.
+- **Faces on the app-split bars** come from `public/challenge/<name>.jpg` (240px squares cut
+  from a group photo), listed in `FACES` in `page.tsx`. A new player needs a file and a name
+  added there; without one they simply get no face. Not checked with `fs` at runtime because
+  `public/` is not on a Vercel function's filesystem.
+- **Charts stop at today** (Pacific), missing days are gaps, and there is no floating
+  tooltip: tapping a day column selects it and a readout under the chart lists every player.
+- **Mock data for dev:** `CHALLENGE_MOCK=full` (or `empty`) and `CHALLENGE_MOCK_TODAY=2026-10-20`
+  on `next dev`; both are ignored in production.
+- `npm run test:challenge` (57 assertions, same no-framework setup as j9);
+  `node --env-file=.env.local scripts/check-notion.ts` prints the cleaned rows and averages
+  to compare against Notion.
+- **Phase 2, planned, not built:** `/challenge/log` — pick a name, PIN, upload a Screen Time
+  screenshot, Claude vision extracts minutes, confirm, upsert to Notion, `revalidatePath`.
+  Ask before changing the Notion schema.
+
 ## Janine's end date calculator (`/j9calculator`)
 
 A standalone page, not a tab on the SPA. Same neo-brutalist vocabulary, but it
@@ -432,6 +474,7 @@ Monday) must not move the end date, while Juneteenth (a Friday) must.
 
 | Date | Change |
 |---|---|
+| Oct 2026 | **No Doomscroll Challenge** at `/challenge`: unlisted ISR page reading a Notion daily log, with a leaderboard, two SVG line charts, an app split and fun stats. Players come from the Notion select, all copy lives in `copy.ts`. See its section. |
 | Sep 2026 | **Photos became a feed**: one large framed photo per row with title, caption, and location · month, from a user mockup, under a plain "Photography" heading (not the mockup's "Through the lens"). Photos gained `title`, `location` and `date` fields, edited in `/admin`. See the Photos section. |
 | Sep 2026 | **Work and Projects editorial restyle, tried and reverted.** Square borderless blocks, tracked uppercase labels, pill tags and a shared 960px column were built and committed, then reverted at the user's request back to the original bordered, rounded cards with the period pill. Also tried along the way and dropped: hairline borders, a blue top rule and a blue tint on the featured card, and a hover shadow. Do not re-propose the editorial look unprompted. |
 | Sep 2026 | **For Fun dropdown**: the Alligator nav item became a `NavMenu` (`nav.tsx`) labelled For Fun with a chevron that flips while open; Alligator is its first entry. Closes on outside click, Escape or a pick (a pathname effect was the first try, and the React lint rule against setState-in-effect sent it to an `onClick` on the list). On mobile the panel overlaps the theme toggle since the wrapped header has no room below. |

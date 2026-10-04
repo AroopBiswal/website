@@ -94,7 +94,7 @@ function requireEnv(name: string): string {
 }
 
 let cachedClient: Client | null = null;
-function notion(): Client {
+export function notion(): Client {
   if (!cachedClient) {
     cachedClient = new Client({ auth: requireEnv("NOTION_TOKEN") });
   }
