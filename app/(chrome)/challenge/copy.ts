@@ -33,7 +33,7 @@ export const copy = {
   chartHint: "Select a day to see each player's value.",
 
   splitHeading: "TikTok vs Instagram",
-  funHeading: "Fun stats",
+  funHeading: "our best days",
   bestDay: "Best day",
   streak: "Longest streak under 30 minutes",
   streakValue: (n: number) => (n === 1 ? "1 day" : `${n} days`),
